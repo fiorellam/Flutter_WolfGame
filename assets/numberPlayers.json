@@ -1,0 +1,37 @@
+[
+    {
+        "min_players": 7,
+        "wolves": 3,
+        "max_players":7
+    },
+    {
+        "min_players": 8,
+        "wolves": 4,
+        "max_players": 11
+    },
+    {
+        "min_players": 12,
+        "wolves": 5,
+        "max_players": 16
+    },
+    {
+        "min_players": 17,
+        "wolves": 6
+    }
+]
+
+cuando tengamos la lista de jugadores.size() == numbersPlayers.?[#this?.cantidad_min]
+
+if cantidad_min >= 7 && cantidad_max < 8
+    3 lobos
+else
+    if cantidad_min >= 8 && cantidad_max < 12
+        4 lobos
+    else
+        if cantidad_min >= 12 && cantidad_max < 17
+            5 lobos
+        else
+            6 lobos
+
+jugadores.length 
+    7

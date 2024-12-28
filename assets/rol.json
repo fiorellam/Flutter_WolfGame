@@ -1,0 +1,115 @@
+[
+    {
+        "level": "Principiante",
+        "roles": [
+            {
+                "name": "lobo"
+            },
+            {
+                "name": "curandero"
+            },
+            {
+                "name": "vidente"
+            },
+            {
+                "name": "bruja"
+            },
+            {
+                "name": "granjero"
+            }
+        ]
+    },
+    {
+        "level": "Intermedio",
+        "roles": [
+            {
+                "name": "lobo"
+            },
+            {
+                "name": "curandero"
+            },
+            {
+                "name": "vidente"
+            },
+            {
+                "name": "bruja"
+            },
+            {
+                "name": "granjero"
+            },
+            {
+                "name": "cupido"
+            },
+            {
+                "name": "protector"
+            }
+        ]
+    },
+    {
+        "level": "Avanzado",
+        "roles": [
+            {
+                "name": "lobo"
+            },
+            {
+                "name": "curandero"
+            },
+            {
+                "name": "vidente"
+            },
+            {
+                "name": "bruja"
+            },
+            {
+                "name": "granjero"
+            },
+            {
+                "name": "cupido"
+            },
+            {
+                "name": "protector"
+            },
+            {
+                "name": "niña"
+            },
+            {
+                "name": "cazador"
+            }
+        ]
+    },
+    {
+        "level": "Pro",
+        "roles": [
+            {
+                "name": "lobo"
+            },
+            {
+                "name": "curandero"
+            },
+            {
+                "name": "vidente"
+            },
+            {
+                "name": "bruja"
+            },
+            {
+                "name": "granjero"
+            },
+            {
+                "name": "niña"
+            },
+            {
+                "name": "cazador"
+            },
+            {
+                "name": "alcalde"
+            },
+            {
+                "name": "lobo solitario"
+            },
+            {
+                "name": "leproso"
+            }
+        ]
+    }
+]
