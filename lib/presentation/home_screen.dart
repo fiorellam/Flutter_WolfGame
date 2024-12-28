@@ -77,36 +77,44 @@ class _HomeScreenState extends State<HomeScreen>{
             // Usamos el widget SearchBar
             SearchBar2(items: _players.map((player) => player.name).toList(), onFilter: _onFilter),
             const SizedBox(height: 20),
-              Expanded(
-              child: ListView.builder(
-                itemCount: _filteredPlayers.length, // Muestra los elementos filtrados
-                itemBuilder: (context, index) {
-                  final player = _filteredPlayers[index];
-                  final isSelected = _selectedPlayers.contains(player); // Verifica si el item está seleccionado
-                  return ListTile(
-                    leading: Icon (
-                      isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
-                        color: isSelected ? Colors.green : Colors.grey,
-                     ), // Cambia el color según el estado de selección,
-                    title: Text(player.name),
-                    trailing: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Telefono: ${player.phone}"),
-                        // Text("Rol: Lobo")
-                      ],
-                    ),
-                    subtitle:Text(player.last_name) ,
-                    onTap: () => _onSelectPlayer(player), // Maneja la selección
-                  );
-                },
-              ),
-            ),
+            _buildPlayerListView(),
             DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),   
             Text("Valor seleccionado: $_selectedValue", style: const TextStyle(fontSize: 18)),       
           ],
         ),
       ),
+    );
+  }
+//Separar la lista de jugadores filtradoes en un metodo
+  Widget _buildPlayerListView(){
+    return Expanded(
+      child: ListView.builder(
+        itemCount: _filteredPlayers.length, // Muestra los elementos filtrados
+        itemBuilder: (context, index) {
+          final player = _filteredPlayers[index];
+          final isSelected = _selectedPlayers.contains(player); // Verifica si el item está seleccionado
+          return ListTile(
+            leading: Icon (
+              isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
+              color: isSelected ? Colors.green : Colors.grey,
+            ), // Cambia el color según el estado de selección,
+            title: Text(player.name),
+            subtitle:Text(player.last_name) ,
+            trailing: _columnTrailingPlayerInfo(player),
+            onTap: () => _onSelectPlayer(player), // Maneja la selección
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _columnTrailingPlayerInfo(Player player){
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Telefono: ${player.phone}"),
+        // Text("Rol: Lobo")
+      ],
     );
   }
 }
