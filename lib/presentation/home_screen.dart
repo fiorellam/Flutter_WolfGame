@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen>{
                       // Text("Rol: Lobo")
                     ],
                   ),
-                  subtitle: Text("6461772925"),
+                  subtitle:Text("Apellido: ${player.last_name}") ,
                   onTap: () => _onSelectItem(player), // Maneja la selección
                 );
               },
