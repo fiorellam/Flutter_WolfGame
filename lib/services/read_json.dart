@@ -4,7 +4,7 @@ import 'package:game_wolf/domain/player.dart';  // Asegúrate de importar la cla
 
 Future <List<Player>> loadPlayersJson() async {
   //Cargar el archivo JSON desde los assets
-  String jsonString = await rootBundle.loadString('assets/player.dart');
+  String jsonString = await rootBundle.loadString('assets/player.json');
 
   //Decodificar el JSON
   List<dynamic> jsonResponse = jsonDecode(jsonString);
