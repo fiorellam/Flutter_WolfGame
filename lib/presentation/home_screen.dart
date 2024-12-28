@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_wolf/presentation/game_screen.dart';
 import 'package:game_wolf/presentation/widgets/dropdown_levels.dart';
 import 'package:game_wolf/presentation/widgets/search_bar2.dart';
 import 'package:game_wolf/domain/player.dart';
@@ -51,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen>{
       .where((player) => filteredItems.any((filter) => player.name.toLowerCase().contains(filter.toLowerCase())))
       .toList();
   });
-}
+  }
 
    // Método que maneja la selección de un jugador
   void _onSelectPlayer(Player player) {
@@ -62,6 +63,14 @@ class _HomeScreenState extends State<HomeScreen>{
         _selectedPlayers.add(player); // Si no está seleccionado, lo seleccionamos
       }
     });
+  }
+
+  //Navegar a nueva pantalla
+  void _startGameScreen(){
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => GameScreen())
+    );
   }
 
   @override
@@ -85,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen>{
                 Text("Valor seleccionado: $_selectedValue", style: const TextStyle(fontSize: 18)),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: FilledButton(onPressed: () => {}, child: const Text("Iniciar Partida")),
+                  child: FilledButton(onPressed: _startGameScreen, child: const Text("Iniciar Partida")),
                 )
               ]
             )     
