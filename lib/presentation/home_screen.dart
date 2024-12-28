@@ -11,22 +11,30 @@ class HomeScreen extends StatefulWidget{
 }
 
 class _HomeScreenState extends State<HomeScreen>{
-  String _selectedValue = "Principiante"; //Valor inicial
-  List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
+  //Constante
+  static const List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
+  String _selectedValue = levelsList.first; //Valor inicial
   // Lista de jugadores cargados desde el archivo JSON
   List<Player> _players = [];
   List<Player> _filteredPlayers = []; // Lista que se actualizará con los jugadores filtrados
+  //En Dart, un Set es una colección no ordenada de elementos únicos. A diferencia de una List, que permite elementos duplicados, 
+  //un Set garantiza que cada elemento se aparezca solo una vez. Por lo tanto, si intentas agregar un elemento que ya existe en un Set, no se agregará de nuevo.
   Set<Player> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
 
+  //Metodo que se llama una vez cuando se crea el estado de la pantalla
   @override
   void initState() {
     super.initState();
     //Cargar los jugadores desde el archivo JSON
-    loadPlayersJson().then((players){
-      setState(() {
-        _players = players;
-        _filteredPlayers = players; //Inicializa los jugadores filtrados con todos
-      });
+    _loadPlayers();
+  }
+
+  //Cargar jugadores desde el JSON
+  Future<void> _loadPlayers() async{
+    final players = await loadPlayersJson();
+    setState(() {
+      _players = players;
+      _filteredPlayers = players;//Inicializa los jugadores filtrados
     });
   }
   //Función que será llamada cuando cambie el valor del dropdown
@@ -40,13 +48,13 @@ class _HomeScreenState extends State<HomeScreen>{
   void _onFilter(List<String> filteredItems) {
   setState(() {
     _filteredPlayers = _players
-        .where((player) => filteredItems.any((filter) => player.name.toLowerCase().contains(filter.toLowerCase())))
-        .toList();
+      .where((player) => filteredItems.any((filter) => player.name.toLowerCase().contains(filter.toLowerCase())))
+      .toList();
   });
 }
 
-   // Método que maneja la selección de un item
-  void _onSelectItem(Player player) {
+   // Método que maneja la selección de un jugador
+  void _onSelectPlayer(Player player) {
     setState(() {
       if (_selectedPlayers.contains(player)) {
         _selectedPlayers.remove(player); // Si ya está seleccionado, lo deseleccionamos
@@ -87,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen>{
                     ],
                   ),
                   subtitle:Text("Apellido: ${player.last_name}") ,
-                  onTap: () => _onSelectItem(player), // Maneja la selección
+                  onTap: () => _onSelectPlayer(player), // Maneja la selección
                 );
               },
             ),
