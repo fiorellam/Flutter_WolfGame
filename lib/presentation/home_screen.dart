@@ -78,8 +78,17 @@ class _HomeScreenState extends State<HomeScreen>{
             SearchBar2(items: _players.map((player) => player.name).toList(), onFilter: _onFilter),
             const SizedBox(height: 20),
             _buildPlayerListView(),
-            DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),   
-            Text("Valor seleccionado: $_selectedValue", style: const TextStyle(fontSize: 18)),       
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),   
+                Text("Valor seleccionado: $_selectedValue", style: const TextStyle(fontSize: 18)),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FilledButton(onPressed: () => {}, child: const Text("Iniciar Partida")),
+                )
+              ]
+            )     
           ],
         ),
       ),
@@ -100,21 +109,17 @@ class _HomeScreenState extends State<HomeScreen>{
             ), // Cambia el color según el estado de selección,
             title: Text(player.name),
             subtitle:Text(player.last_name) ,
-            trailing: _columnTrailingPlayerInfo(player),
+            trailing: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Telefono: ${player.phone}"),
+                // Text("Rol: Lobo")
+              ],
+            ),
             onTap: () => _onSelectPlayer(player), // Maneja la selección
           );
         },
       ),
-    );
-  }
-
-  Widget _columnTrailingPlayerInfo(Player player){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Telefono: ${player.phone}"),
-        // Text("Rol: Lobo")
-      ],
     );
   }
 }
