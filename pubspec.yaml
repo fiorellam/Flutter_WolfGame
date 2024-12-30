@@ -61,7 +61,7 @@ flutter:
   assets:
     - assets/players.json
     - assets/numberPlayers.json
-    - rol.json
+    - assets/rol.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -51,8 +51,8 @@ Future<void> assignRolesToPlayers(List<Player> players) async {
   // Mezclar los roles aleatoriamente
   roleList.shuffle();
 
-  // Asignar los roles a los jugadores
+  /*// Asignar los roles a los jugadores
   for (int i = 0; i < players.length; i++) {
-    players[i].role = roleList.isNotEmpty ? roleList.removeAt(0) : "Aldeano";
-  }
+    players[i].roles = roleList.isNotEmpty ? roleList.removeAt(0) : "Aldeano";
+  }*/
 }
