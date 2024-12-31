@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:game_wolf/domain/player.dart';
+import 'package:game_wolf/domain/user_player_mapper.dart';
 import 'package:game_wolf/presentation/game_screen.dart';
 import 'package:game_wolf/presentation/widgets/dropdown_levels.dart';
 import 'package:game_wolf/presentation/widgets/search_bar2.dart';
-import 'package:game_wolf/domain/player.dart';
+import 'package:game_wolf/domain/user.dart';
 import 'package:game_wolf/services/read_json.dart';
 class HomeScreen extends StatefulWidget{
   const HomeScreen({super.key});
@@ -16,12 +18,27 @@ class _HomeScreenState extends State<HomeScreen>{
   static const List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
   String _selectedValue = levelsList.first; //Valor inicial
   // Lista de jugadores cargados desde el archivo JSON
-  List<Player> _players = [];
-  List<Player> _filteredPlayers = []; // Lista que se actualizará con los jugadores filtrados
+  List<User> _players = [];
+  List<User> _filteredPlayers = []; // Lista que se actualizará con los jugadores filtrados
   //En Dart, un Set es una colección no ordenada de elementos únicos. A diferencia de una List, que permite elementos duplicados, 
   //un Set garantiza que cada elemento se aparezca solo una vez. Por lo tanto, si intentas agregar un elemento que ya existe en un Set, no se agregará de nuevo.
-  Set<Player> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
+  Set<User> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
 
+  //Navegar a nueva pantalla
+  void _startGameScreen(){
+    //Llamar funcion que convierte lista de User a Player
+    List<Player> gamePlayers = convertUsersToPlayers(_selectedPlayers.toList());
+    Navigator.push(
+      context, 
+      MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers))
+    );
+  }
+
+  List<Player> convertUsersToPlayers(List<User> users){
+    return users.map((user){
+      return UserPlayerMapper.userToPlayer(user);
+    }).toList();
+  }
   //Metodo que se llama una vez cuando se crea el estado de la pantalla
   @override
   void initState() {
@@ -55,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen>{
   }
 
    // Método que maneja la selección de un jugador
-  void _onSelectPlayer(Player player) {
+  void _onSelectPlayer(User player) {
     setState(() {
       if (_selectedPlayers.contains(player)) {
         _selectedPlayers.remove(player); // Si ya está seleccionado, lo deseleccionamos
@@ -63,14 +80,6 @@ class _HomeScreenState extends State<HomeScreen>{
         _selectedPlayers.add(player); // Si no está seleccionado, lo seleccionamos
       }
     });
-  }
-
-  //Navegar a nueva pantalla
-  void _startGameScreen(){
-    Navigator.push(
-      context, 
-      MaterialPageRoute(builder: (context) => GameScreen())
-    );
   }
 
   @override
@@ -117,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen>{
               color: isSelected ? Colors.green : Colors.grey,
             ), // Cambia el color según el estado de selección,
             title: Text(player.name),
-            subtitle:Text(player.last_name) ,
+            subtitle:Text(player.lastName) ,
             trailing: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

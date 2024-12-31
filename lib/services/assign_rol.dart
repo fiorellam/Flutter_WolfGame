@@ -1,7 +1,7 @@
 import 'dart:convert'; //Libreria de dart que ofrece funciones para codificar o decodificar datos como JSON
 import 'package:flutter/services.dart' show rootBundle; //Importa librería de Flutter que permite acceder a recursos del proyecto, como archivos locales. Aquí se usa rootBundle para cargar archivos desde los assets (carpetas dentro del proyecto Flutter, como assets/).
 import 'package:game_wolf/domain/wolvesAssign.dart';  // Asegúrate de importar la clase Wolves Assign
-import 'package:game_wolf/domain/player.dart';  // importar la clase Player
+import 'package:game_wolf/domain/user.dart';  // importar la clase Player
 String pathFile = "assets/numberPayers.json";
 
 //Metodo para crear una instancia de Wolve Assign desde un Map
@@ -32,7 +32,7 @@ int getNumberOfWolves(int numberOfPlayers, List<WolveAssign> wolves) {
 }
 
 // Ejemplo de cómo usarlo
-Future<void> assignRolesToPlayers(List<Player> players) async {
+Future<void> assignRolesToPlayers(List<User> players) async {
   // Cargar la configuración de asignación de roles desde el archivo JSON
   List<WolveAssign> roleAssignments = await loadWolveAssign();
 
