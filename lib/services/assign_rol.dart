@@ -3,7 +3,6 @@ import 'package:flutter/services.dart' show rootBundle; //Importa librería de F
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/domain/role_assignment.dart';
 import 'package:game_wolf/domain/wolves_assign.dart';  // Asegúrate de importar la clase Wolves Assign
-import 'package:game_wolf/domain/user.dart';  // importar la clase Player
 
 //Metodo para crear una instancia de Wolve Assign desde un Map
 Future <List<WolveAssign>> loadWolveAssign() async {
