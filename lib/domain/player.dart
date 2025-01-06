@@ -3,7 +3,7 @@ class Player{
   final String name;
   final String lastName;
   final String phone;
-  final String role;
+  String role;
   final String state;
 
   Player({

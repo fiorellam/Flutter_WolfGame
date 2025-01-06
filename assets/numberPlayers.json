@@ -16,6 +16,7 @@
     },
     {
         "min_players": 17,
-        "wolves": 6
+        "wolves": 6,
+        "max_players": 25
     }
 ]

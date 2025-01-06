@@ -9,8 +9,8 @@ class UserPlayerMapper{
       name: user.name,
       lastName: user.lastName,
       phone: user.phone,
-      role: "Aldeano",
-      state: "vivo" //Estado inicial
+      role: "Granjero",
+      state: "Vivo" //Estado inicial
     );
   }
 

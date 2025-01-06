@@ -3,8 +3,12 @@ import 'package:game_wolf/domain/player.dart';
 
 class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
+  final String level;
 
-  GameScreen({super.key, required this.selectedPlayers});
+  GameScreen({super.key, 
+  required this.selectedPlayers,
+  required this.level
+  });
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -21,6 +25,7 @@ class _GameScreenState extends State<GameScreen> {
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
         child: Column(
           children: [
+            Text('Nivel Seleccionado: ${widget.level}'),
             const SizedBox(height: 20),
             _buildPlayerListView(),
           ],
@@ -63,6 +68,8 @@ class _GameScreenState extends State<GameScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 //mostrar los datos en columnas
                 children: [
+                  Expanded(
+                      child: Text('${index + 1}')),
                   Expanded(
                       child: Text('${player.name} ${player.lastName}')),
                   Expanded(

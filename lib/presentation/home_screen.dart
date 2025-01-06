@@ -6,6 +6,7 @@ import 'package:game_wolf/presentation/widgets/dropdown_levels.dart';
 import 'package:game_wolf/presentation/widgets/search_bar2.dart';
 import 'package:game_wolf/domain/user.dart';
 import 'package:game_wolf/services/read_json.dart';
+import 'package:game_wolf/services/assign_rol.dart';
 class HomeScreen extends StatefulWidget{
   const HomeScreen({super.key});
 
@@ -25,12 +26,15 @@ class _HomeScreenState extends State<HomeScreen>{
   Set<User> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
 
   //Navegar a nueva pantalla
-  void _startGameScreen(){
+  void _startGameScreen() async{
     //Llamar funcion que convierte lista de User a Player
     List<Player> gamePlayers = convertUsersToPlayers(_selectedPlayers.toList());
+    //Asignar roles a los jugadores
+    await assignRolesToPlayers(gamePlayers, _selectedValue);
+
     Navigator.push(
       context, 
-      MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers))
+      MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers, level: _selectedValue, ))
     );
   }
 

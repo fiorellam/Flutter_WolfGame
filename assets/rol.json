@@ -2,114 +2,48 @@
     {
         "level": "Principiante",
         "roles": [
-            {
-                "name": "lobo"
-            },
-            {
-                "name": "curandero"
-            },
-            {
-                "name": "vidente"
-            },
-            {
-                "name": "bruja"
-            },
-            {
-                "name": "granjero"
-            }
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"}
         ]
     },
     {
         "level": "Intermedio",
         "roles": [
-            {
-                "name": "lobo"
-            },
-            {
-                "name": "curandero"
-            },
-            {
-                "name": "vidente"
-            },
-            {
-                "name": "bruja"
-            },
-            {
-                "name": "granjero"
-            },
-            {
-                "name": "cupido"
-            },
-            {
-                "name": "protector"
-            }
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"},
+            {"name": "Cupido"},
+            {"name": "Protector"}
         ]
     },
     {
         "level": "Avanzado",
         "roles": [
-            {
-                "name": "lobo"
-            },
-            {
-                "name": "curandero"
-            },
-            {
-                "name": "vidente"
-            },
-            {
-                "name": "bruja"
-            },
-            {
-                "name": "granjero"
-            },
-            {
-                "name": "cupido"
-            },
-            {
-                "name": "protector"
-            },
-            {
-                "name": "niña"
-            },
-            {
-                "name": "cazador"
-            }
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"},
+            {"name": "Cupido"},
+            {"name": "Protector"},
+            {"name": "Niña"},
+            {"name": "Cazador"}
         ]
     },
     {
         "level": "Pro",
         "roles": [
-            {
-                "name": "lobo"
-            },
-            {
-                "name": "curandero"
-            },
-            {
-                "name": "vidente"
-            },
-            {
-                "name": "bruja"
-            },
-            {
-                "name": "granjero"
-            },
-            {
-                "name": "niña"
-            },
-            {
-                "name": "cazador"
-            },
-            {
-                "name": "alcalde"
-            },
-            {
-                "name": "lobo solitario"
-            },
-            {
-                "name": "leproso"
-            }
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"},
+            {"name": "Niña"},
+            {"name": "Cazador"},
+            {"name": "Alcalde"},
+            {"name": "Lobo solitario"},
+            {"name": "Leproso"}
         ]
     }
 ]
