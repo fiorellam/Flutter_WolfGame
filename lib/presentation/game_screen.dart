@@ -55,7 +55,7 @@ class _GameScreenState extends State<GameScreen> {
           final isAlive = player.state.toLowerCase() == "vivo";
 
           return Card(
-            color: isAlive ? Colors.white : Colors.red.shade100,
+            color: isAlive ? Colors.green.shade50 : Colors.red.shade200,
             margin: EdgeInsets.all(4),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -64,9 +64,7 @@ class _GameScreenState extends State<GameScreen> {
                 //mostrar los datos en columnas
                 children: [
                   Expanded(
-                      child: Text(player.id.toString())),
-                  Expanded(
-                      child: Text(player.name)),
+                      child: Text('${player.name} ${player.lastName}')),
                   Expanded(
                       child: Text(player.role)),
                   Expanded(
