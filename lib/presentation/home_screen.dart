@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/domain/user_player_mapper.dart';
 import 'package:game_wolf/presentation/game_screen.dart';
-import 'package:game_wolf/presentation/create_screen.dart';
 import 'package:game_wolf/presentation/widgets/dropdown_levels.dart';
 import 'package:game_wolf/presentation/widgets/search_bar2.dart';
 import 'package:game_wolf/domain/user.dart';
