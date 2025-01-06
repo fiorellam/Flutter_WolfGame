@@ -1,6 +1,6 @@
 import 'dart:convert'; //Libreria de dart que ofrece funciones para codificar o decodificar datos como JSON
 import 'package:flutter/services.dart' show rootBundle; //Importa librería de Flutter que permite acceder a recursos del proyecto, como archivos locales. Aquí se usa rootBundle para cargar archivos desde los assets (carpetas dentro del proyecto Flutter, como assets/).
-import 'package:game_wolf/domain/wolvesAssign.dart';  // Asegúrate de importar la clase Wolves Assign
+import 'package:game_wolf/domain/wolves_assign.dart';  // Asegúrate de importar la clase Wolves Assign
 import 'package:game_wolf/domain/user.dart';  // importar la clase Player
 String pathFile = "assets/numberPayers.json";
 
