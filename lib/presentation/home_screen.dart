@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/domain/user_player_mapper.dart';
 import 'package:game_wolf/presentation/game_screen.dart';
+import 'package:game_wolf/presentation/create_screen.dart';
 import 'package:game_wolf/presentation/widgets/dropdown_levels.dart';
 import 'package:game_wolf/presentation/widgets/search_bar2.dart';
 import 'package:game_wolf/domain/user.dart';
@@ -37,7 +38,78 @@ class _HomeScreenState extends State<HomeScreen>{
       MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers, level: _selectedValue, ))
     );
   }
+  
+  //Navegar a create Screen
+  // Agregar nuevo usuario mediante un modal
+  void _showDialogCreateUser() {
+    // Controladores para el formulario
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController lastNameController = TextEditingController();
+    final TextEditingController phoneController = TextEditingController();
 
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Agregar Jugador'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nombre'),
+              ),
+              TextField(
+                controller: lastNameController,
+                decoration: const InputDecoration(labelText: 'Apellido'),
+              ),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Teléfono'),
+                keyboardType: TextInputType.phone,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el modal sin guardar
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Validar y agregar el nuevo jugador
+                if (nameController.text.isNotEmpty &&
+                    lastNameController.text.isNotEmpty &&
+                    phoneController.text.isNotEmpty) {
+                  setState(() {
+                    final newUser = User(
+                      id: DateTime.now().millisecondsSinceEpoch,
+                      name: nameController.text,
+                      lastName: lastNameController.text,
+                      phone: phoneController.text,
+                    );
+                    _players.add(newUser);
+                    // Actualiza _filteredPlayers dinámicamente solo si contiene filtros
+                  if (_filteredPlayers.length != _players.length) {
+                    _filteredPlayers = List.from(_players);
+                  }
+                  });
+                  Navigator.of(context).pop(); // Cerrar el modal
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Por favor, completa todos los campos.')),
+                  );
+                }
+              },
+              child: const Text('Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
   List<Player> convertUsersToPlayers(List<User> users){
     return users.map((user){
       return UserPlayerMapper.userToPlayer(user);
@@ -103,12 +175,20 @@ class _HomeScreenState extends State<HomeScreen>{
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),   
-                Text("Valor seleccionado: $_selectedValue", style: const TextStyle(fontSize: 18)),
-                Padding(
+                DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),
+                Expanded(
+                  child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FilledButton(onPressed: _showDialogCreateUser, child: const Text("Agregar Jugador")),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
                   padding: const EdgeInsets.all(8.0),
                   child: FilledButton(onPressed: _startGameScreen, child: const Text("Iniciar Partida")),
-                )
+                  //child: FilledButton(onPressed: _createScreen, child: const Text("Iniciar Partida")),
+                  ),
+                ),
               ]
             )     
           ],
