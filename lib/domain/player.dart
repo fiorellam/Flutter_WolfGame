@@ -4,6 +4,7 @@ class Player{
   final String lastName;
   final String phone;
   String role;
+  String? secondaryRol;
   final String state;
 
   Player({
@@ -12,7 +13,8 @@ class Player{
     required this.lastName,
     required this.phone,
     required this.role,
-    required this.state
+    required this.state,
+    this.secondaryRol
   });
 
   //Convertir un mapa JSON en un objeto Player
@@ -23,6 +25,7 @@ class Player{
       lastName: json['lastName'],
       phone: json['phone'],
       role: json['role'], 
+      secondaryRol: json['secondaryRol'] as String?,
       state: json['state']
     );
   }

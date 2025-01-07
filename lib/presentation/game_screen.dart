@@ -107,6 +107,8 @@ class _GameScreenState extends State<GameScreen> {
                   Expanded(
                       child: Text(player.role)),
                   Expanded(
+                      child: Text(player.secondaryRol ?? '')),
+                  Expanded(
                       child: Text(player.state)),
                 ],
               ),
