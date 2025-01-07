@@ -5,9 +5,9 @@ class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
   final String level;
 
-  GameScreen({super.key, 
-  required this.selectedPlayers,
-  required this.level
+  const GameScreen({super.key, 
+    required this.selectedPlayers,
+    required this.level
   });
 
   @override
@@ -19,14 +19,13 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('JUEGO LOBO'),
+        centerTitle: true,
+        title: Text('JUEGO LOBO - Nivel: ${widget.level}'),
       ),
       body: Container(
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
         child: Column(
           children: [
-            Text('Nivel Seleccionado: ${widget.level}'),
-            const SizedBox(height: 20),
             _buildPlayerListView(),
           ],
         ),
@@ -34,19 +33,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  // final List<Map<String, dynamic>> data = [
-  //   {"id": "3","name": "Miguel", "rol": "Aldeano", "state": "vivo"},
-  //   {"id": "10","name": "Fiorella", "rol": "Aldeano", "state": "vivo"},
-  //   {"id": "1","name": "Lalo", "rol": "Bruja", "state": "vivo"},
-  //   {"id": "4","name": "Cindy", "rol": "Lobo", "state": "vivo"},
-  //   {"id": "6","name": "Jugador_1", "rol": "Curandero", "state": "muerto"},
-  //   {"id": "8","name": "Jugador_2", "rol": "Lobo", "state": "vivo"},
-  //   {"id": "2","name": "Jugador_3", "rol": "Vidente", "state": "vivo"},
-  //   {"id": "5","name": "Jugador_4", "rol": "Lobo", "state": "muerto"},
-  //   {"id": "7","name": "Jugador_5", "rol": "Granjero", "state": "vivo"},
-  //   {"id": "9","name": "Jugador_6", "rol": "Aldeano", "state": "vivo"},
-  //   {"id": "11","name": "Jugador_7", "rol": "Aldeano", "state": "muerto"},
-  // ];
   //Mostrar los datos
   Widget _buildPlayerListView() {
     return Expanded(
@@ -55,8 +41,7 @@ class _GameScreenState extends State<GameScreen> {
         itemBuilder: (context, index) {
           final player = widget.selectedPlayers[index];
 
-          // Condición para resaltar el renglón en rojo
-          // para hacer los cambios dinamicamente
+          // Condición para resaltar el renglón en rojo para hacer los cambios dinamicamente
           final isAlive = player.state.toLowerCase() == "vivo";
 
           return Card(

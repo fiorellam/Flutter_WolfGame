@@ -161,31 +161,58 @@ class _HomeScreenState extends State<HomeScreen>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: Text('Buscar Jugadores'),
       ),
       body: Container(
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
         child: Column(
           children: [
-            // Usamos el widget SearchBar
-            SearchBar2(items: _players.map((player) => player.name).toList(), onFilter: _onFilter),
+            Row(
+              children: [
+                //SearchBar Ocupa el mayor espacio
+                Expanded(
+                     // Usamos el widget SearchBar
+                  child: SearchBar2(items: _players.map((player) => player.name).toList(), onFilter: _onFilter),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  onPressed: _showDialogCreateUser,
+                  style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
+                        ),
+                  ), 
+                  child: const Text("Agregar Jugador"),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  onPressed: () => {},
+                  style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
+                        ),
+                  ),
+                  child: const Text("Guardar Jugadores"),)
+              ],
+
+            ),
             const SizedBox(height: 20),
             _buildPlayerListView(),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),
-                Expanded(
-                  child: Container(
+                Container(
                   padding: const EdgeInsets.all(8.0),
-                  child: FilledButton(onPressed: _showDialogCreateUser, child: const Text("Agregar Jugador")),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  child: FilledButton(onPressed: _startGameScreen, child: const Text("Iniciar Partida")),
-                  //child: FilledButton(onPressed: _createScreen, child: const Text("Iniciar Partida")),
+                  child: FilledButton(
+                    onPressed: _startGameScreen,
+                    style: FilledButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
+                      ),
+                    ), 
+                    child: const Text("Iniciar Partida"),
                   ),
                 ),
               ]
@@ -203,21 +230,16 @@ class _HomeScreenState extends State<HomeScreen>{
         itemBuilder: (context, index) {
           final player = _filteredPlayers[index];
           final isSelected = _selectedPlayers.contains(player); // Verifica si el item está seleccionado
-          return ListTile(
-            leading: Icon (
-              isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
-              color: isSelected ? Colors.green : Colors.grey,
-            ), // Cambia el color según el estado de selección,
-            title: Text(player.name),
-            subtitle:Text(player.lastName) ,
-            trailing: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Telefono: ${player.phone}"),
-                // Text("Rol: Lobo")
-              ],
+          return Card(
+            child: ListTile(
+              leading: Icon (
+                isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
+                color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
+              ),
+              title: Text('${player.name} ${player.lastName}'),
+              trailing: Text('Tel: ${player.phone}'),
+              onTap: () => _onSelectPlayer(player), // Maneja la selección
             ),
-            onTap: () => _onSelectPlayer(player), // Maneja la selección
           );
         },
       ),
