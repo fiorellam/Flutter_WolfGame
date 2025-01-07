@@ -15,6 +15,21 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+
+  bool isDay = true;
+  String gameState = "Lobos Turno";
+
+  void _goToNextPhase() {
+    setState(() {
+      //Cambiar de dia a noche o viceversa
+      //TODO: Esto solo va a cambiar una vez hayan terminado todos las fases
+      isDay = !isDay;
+      //Cambiar el estado del juego 
+      //TODO: Falta traer los estados de juego dependiendo del nivel
+      gameState = 'Turno Bruja';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,6 +41,38 @@ class _GameScreenState extends State<GameScreen> {
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
         child: Column(
           children: [
+            //Cuadros de informacion y botón
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text('Estado: ${isDay? 'Día' : 'Noche'}'),
+                  ),
+                ),
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text("Estado: $gameState"),
+                  ) ,
+                ),
+                //Boton siguiente fase
+                FilledButton(
+                  onPressed: _goToNextPhase,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0)
+                    ),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                  child: Text("Siguiente Fase"),
+                  
+                )
+              ],
+            ),
             _buildPlayerListView(),
           ],
         ),
@@ -48,7 +95,7 @@ class _GameScreenState extends State<GameScreen> {
             color: isAlive ? Colors.green.shade50 : Colors.red.shade200,
             margin: EdgeInsets.all(4),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(5.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 //mostrar los datos en columnas

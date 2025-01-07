@@ -168,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen>{
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
         child: Column(
           children: [
+            Text('Jugadores seleccionados ${_selectedPlayers.length}'),
             Row(
               children: [
                 //SearchBar Ocupa el mayor espacio
@@ -197,14 +198,14 @@ class _HomeScreenState extends State<HomeScreen>{
               ],
 
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             _buildPlayerListView(),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),
                 Container(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(4.0),
                   child: FilledButton(
                     onPressed: _startGameScreen,
                     style: FilledButton.styleFrom(
