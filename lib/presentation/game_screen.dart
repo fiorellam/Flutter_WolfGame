@@ -31,7 +31,6 @@ class _GameScreenState extends State<GameScreen> {
     _initializePhases();
 
   }
-
   Future<void> _initializePhases() async{
     List<PhasesByLevel> phases = await loadPhases();
 
@@ -192,11 +191,14 @@ class _GameScreenState extends State<GameScreen> {
                       child: Text(player.secondaryRol ?? '')),
                   Expanded(
                       child: Text(player.state ?? '')),
-                  Expanded(
-                      child: IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _editItem(index, player),
-                      ),
+
+                  SizedBox(
+                     width: 60.0,  // Aquí puedes establecer el ancho del IconButton
+                     height: 35.0,  // Altura si lo necesitas
+                     child: IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () => _editItem(index, player),
+                    ),
                   )
                 ],
               ),
