@@ -5,7 +5,7 @@ class Player{
   final String phone;
   String role;
   String? secondaryRol;
-  final String state;
+  String? state;
 
   Player({
     required this.id,
@@ -13,7 +13,7 @@ class Player{
     required this.lastName,
     required this.phone,
     required this.role,
-    required this.state,
+    this.state,
     this.secondaryRol
   });
 
