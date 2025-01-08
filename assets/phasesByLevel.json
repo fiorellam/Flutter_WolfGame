@@ -1,0 +1,72 @@
+[
+    {
+        "level": "Principiante",
+        "dia": [
+            {"name": "Asamblea"},
+            {"name": "Eleccion Sheriff"},
+            {"name": "Nominacion"}
+        ],
+        "noche":[
+            {"name": "Lobos"},
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"}
+        ]
+    },
+    {
+        "level": "Intermedio",
+        "dia": [
+            {"name": "Asamblea"},
+            {"name": "Eleccion Sheriff"},
+            {"name": "Nominacion"}
+        ],
+        "noche":[
+            {"name": "Lobos"},
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"},
+            {"name": "Cupido"},
+            {"name": "Protector"}
+        ]
+    },
+    {
+        "level": "Avanzado",
+        "dia": [
+            {"name": "Asamblea"},
+            {"name": "Eleccion Sheriff"},
+            {"name": "Nominacion"}
+        ],
+        "noche":[
+            {"name": "Lobos"},
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"},
+            {"name": "Cupido"},
+            {"name": "Protector"},
+            {"name": "Niña"},
+            {"name": "Cazador"}
+        ]
+    },
+    {
+        "level": "Pro",
+        "dia": [
+            {"name": "Asamblea"},
+            {"name": "Eleccion Sheriff"},
+            {"name": "Nominacion"}
+        ],
+        "noche":[
+            {"name": "Lobos"},
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"},
+            {"name": "Niña"},
+            {"name": "Cazador"},
+            {"name": "Alcalde"},
+            {"name": "Lobo solitario"},
+            {"name": "Leproso"}
+        ]
+    }
+]

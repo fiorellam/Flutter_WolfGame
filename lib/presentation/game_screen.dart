@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:game_wolf/domain/phase.dart';
+import 'package:game_wolf/domain/phases_by_level.dart';
 import 'package:game_wolf/domain/player.dart';
+import 'package:game_wolf/services/phases_assign.dart';
 
 class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
@@ -18,15 +21,47 @@ class _GameScreenState extends State<GameScreen> {
 
   bool isDay = true;
   String gameState = "Lobos Turno";
+  List<Phase> dayPhases = [];
+  List<Phase> nightPhases = [];
+  int currentPhaseIndex = 0;
+
+  @override
+  void initState(){
+    super.initState();
+    _initializePhases();
+
+  }
+
+  Future<void> _initializePhases() async{
+    List<PhasesByLevel> phases = await loadPhases();
+
+    //Filtrar fases por nivel seleccionado
+    final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
+
+    setState(() {
+      dayPhases = levelPhases.dia.cast<Phase>();
+      nightPhases = levelPhases.noche.cast<Phase>();
+      gameState = isDay ? dayPhases[0].name : nightPhases[0].name; // Inicializar el juego
+    });
+
+  }
 
   void _goToNextPhase() {
-    setState(() {
-      //Cambiar de dia a noche o viceversa
-      //TODO: Esto solo va a cambiar una vez hayan terminado todos las fases
-      isDay = !isDay;
-      //Cambiar el estado del juego 
-      //TODO: Falta traer los estados de juego dependiendo del nivel
-      gameState = 'Turno Bruja';
+     setState(() {
+      // Obtener las fases actuales (día o noche)
+      List<Phase> currentPhases = isDay ? dayPhases : nightPhases;
+
+      // Avanzar al siguiente índice dentro de las fases actuales
+      if (currentPhaseIndex < currentPhases.length - 1) {
+        currentPhaseIndex++;
+      } else {
+        // Cambiar entre día y noche y reiniciar el índice
+        isDay = !isDay;
+        currentPhaseIndex = 0;
+      }
+
+      // Actualizar el estado del juego
+      gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
     });
   }
 
