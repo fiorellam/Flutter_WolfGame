@@ -128,6 +128,7 @@ class _GameScreenState extends State<GameScreen> {
               children: [
                 Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  color: const Color.fromARGB(255, 137, 108, 188),
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Text('Estado: ${isDay? 'Día' : 'Noche'}'),
@@ -135,6 +136,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  color: const Color.fromARGB(255, 137, 108, 188),
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Text("Estado: $gameState"),
@@ -173,7 +175,7 @@ class _GameScreenState extends State<GameScreen> {
           final isAlive = player.state?.toLowerCase() == "vivo";
 
           return Card(
-            color: isAlive ? Colors.green.shade50 : Colors.red.shade200,
+            color: isAlive ? const Color.fromARGB(147, 49, 220, 98) : Colors.red.shade300,
             margin: EdgeInsets.all(4),
             child: Padding(
               padding: const EdgeInsets.all(5.0),
@@ -215,7 +217,7 @@ class _GameScreenState extends State<GameScreen> {
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas
                      child: IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      icon: const Icon(Icons.edit, color: Colors.white),
                       onPressed: () => _editItem(index, player),
                     ),
                   )

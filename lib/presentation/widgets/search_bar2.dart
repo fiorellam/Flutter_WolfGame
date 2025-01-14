@@ -39,7 +39,7 @@ class _SearchBar2State extends State<SearchBar2>{
       controller: _searchController, //Asocia el controlador con el TextField
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.grey.shade300,
+        fillColor: Colors.grey.shade800,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide.none,
