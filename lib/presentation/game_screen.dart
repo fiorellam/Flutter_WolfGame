@@ -182,16 +182,35 @@ class _GameScreenState extends State<GameScreen> {
                 //mostrar los datos en columnas
                 children: [
                   Expanded(
-                      child: Text('${index + 1}')),
+                      child: Text(
+                          '${index + 1}',
+                          style: new TextStyle(
+                            fontSize: 20.0,
+                          ))),
                   Expanded(
-                      child: Text('${player.name} ${player.lastName}')),
+                      child: Text(
+                          '${player.name} ${player.lastName}',
+                          style: new TextStyle(
+                            fontSize: 20.0,
+                          ))),
                   Expanded(
-                      child: Text(player.role)),
+                      child: Text(
+                          player.role,
+                          style: new TextStyle(
+                            fontSize: 20.0,
+                          ))),
                   Expanded(
-                      child: Text(player.secondaryRol ?? '')),
+                      child: Text(
+                          player.secondaryRol ?? '',
+                          style: new TextStyle(
+                            fontSize: 20.0,
+                          ))),
                   Expanded(
-                      child: Text(player.state ?? '')),
-
+                      child: Text(
+                          player.state ?? '',
+                          style: new TextStyle(
+                            fontSize: 20.0,
+                          ))),
                   SizedBox(
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas

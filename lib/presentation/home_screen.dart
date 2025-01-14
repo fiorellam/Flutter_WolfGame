@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen>{
   //En Dart, un Set es una colección no ordenada de elementos únicos. A diferencia de una List, que permite elementos duplicados, 
   //un Set garantiza que cada elemento se aparezca solo una vez. Por lo tanto, si intentas agregar un elemento que ya existe en un Set, no se agregará de nuevo.
   Set<User> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
-
+  
   //Navegar a nueva pantalla
   void _startGameScreen() async{
     //Llamar funcion que convierte lista de User a Player
@@ -237,8 +237,14 @@ class _HomeScreenState extends State<HomeScreen>{
                 isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
                 color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
               ),
-              title: Text('${player.name} ${player.lastName}'),
-              trailing: Text('Tel: ${player.phone}'),
+              title: Text('${player.name} ${player.lastName}',
+                style: new TextStyle(
+                  fontSize: 20.0,
+                )),
+              trailing: Text('Tel: ${player.phone}',
+                style: new TextStyle(
+                  fontSize: 20.0,
+                )),
               onTap: () => _onSelectPlayer(player), // Maneja la selección
             ),
           );
