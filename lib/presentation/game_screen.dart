@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:game_wolf/domain/phase.dart';
 import 'package:game_wolf/domain/phases_by_level.dart';
@@ -18,7 +19,7 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-
+  int contador = 0;
   bool isDay = true;
   String gameState = "Lobos Turno";
   List<Phase> dayPhases = [];
@@ -31,6 +32,7 @@ class _GameScreenState extends State<GameScreen> {
     _initializePhases();
 
   }
+
   Future<void> _initializePhases() async{
     List<PhasesByLevel> phases = await loadPhases();
 
@@ -49,7 +51,15 @@ class _GameScreenState extends State<GameScreen> {
      setState(() {
       // Obtener las fases actuales (día o noche)
       List<Phase> currentPhases = isDay ? dayPhases : nightPhases;
-
+      /*
+      if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea'){
+        if (lobos[vivo] == !lobos[vivo])
+          lobos -> gana
+        if (lobos[vivo] == 0)
+          aldeanos -> gana
+        
+      }
+      */
       // Avanzar al siguiente índice dentro de las fases actuales
       if (currentPhaseIndex < currentPhases.length - 1) {
         currentPhaseIndex++;
@@ -57,10 +67,16 @@ class _GameScreenState extends State<GameScreen> {
         // Cambiar entre día y noche y reiniciar el índice
         isDay = !isDay;
         currentPhaseIndex = 0;
+        if (isDay == false) {
+            contador++;
+        } 
       }
 
       // Actualizar el estado del juego
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+      if (isDay && dayPhases[currentPhaseIndex].name == 'Nominacion') {
+        _showTemporizador();
+      }
     });
   }
 
@@ -109,6 +125,60 @@ class _GameScreenState extends State<GameScreen> {
         );
       },
     );
+  }
+
+  //temporizador
+  void _showTemporizador() {
+    const int totalSeconds = 5 * 60; // 5 minutos en segundos
+    int remainingSeconds = totalSeconds;
+    Timer? timer;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Cuenta Regresiva"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              // Iniciar el temporizador
+              timer ??= Timer.periodic(const Duration(seconds: 1), (Timer t) {
+                if (remainingSeconds > 0) {
+                  setState(() {
+                    remainingSeconds--;
+                  });
+                } else {
+                  t.cancel();
+                  Navigator.of(context).pop();
+                }
+              });
+
+              return Text(
+                "Tiempo restante: ${_formatTime(remainingSeconds)}",
+                style: const TextStyle(fontSize: 18),
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (timer != null) timer?.cancel(); // Cancelar el temporizador
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+          ],
+        );
+      },
+    ).then((_) {
+      if (timer != null) timer?.cancel(); // Asegurarse de cancelar el temporizador
+    });
+  }
+
+  String _formatTime(int totalSeconds) {
+    final int minutes = ((totalSeconds / 60) % 60).floor();
+    final int seconds = (totalSeconds % 60).floor();
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override
