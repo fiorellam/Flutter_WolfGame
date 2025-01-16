@@ -76,6 +76,9 @@ class _GameScreenState extends State<GameScreen> {
 
       // Actualizar el estado del juego
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+      if (isDay && dayPhases[currentPhaseIndex].name == 'Eleccion Sheriff') {
+        _turnSheriff();
+      }
       if (isDay && dayPhases[currentPhaseIndex].name == 'Nominacion') {
         _showTemporizador();
       }
@@ -137,6 +140,129 @@ class _GameScreenState extends State<GameScreen> {
                 Navigator.of(context).pop();
               },
               child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //Modal lobos
+  void _turnSheriff() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Eleccion Sheriff"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState((){
+                  selectedPlayer?.secondaryRol = 'Sheriff';
+                  Navigator.of(context).pop();
+                });
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _turnAyudante() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Lobos"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.state?.toLowerCase() != 'Muerto' && player.state?.toLowerCase() != 'Sheriff') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState((){
+                  selectedPlayer?.state = 'Seleccionado';
+                  Navigator.of(context).pop();
+                });
+              },
+              child: const Text("Aceptar"),
             ),
           ],
         );
@@ -567,7 +693,7 @@ class _GameScreenState extends State<GameScreen> {
           final player = widget.selectedPlayers[index];
 
           // Condición para resaltar el renglón en rojo para hacer los cambios dinamicamente
-          final isAlive = player.state?.toLowerCase() == "Vivo";
+          final isAlive = player.state?.toLowerCase() == "vivo";
 
           return Card(
             color: isAlive ? const Color.fromARGB(147, 49, 220, 98) : Colors.red.shade300,
