@@ -4,6 +4,7 @@ import 'package:game_wolf/domain/phase.dart';
 import 'package:game_wolf/domain/phases_by_level.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/services/phases_assign.dart';
+//import 'package:game_wolf/presentation/widgets/dropdown_players.dart';
 
 class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
@@ -25,6 +26,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Phase> dayPhases = [];
   List<Phase> nightPhases = [];
   int currentPhaseIndex = 0;
+  //String _selectedValue; //Valor inicial
 
   @override
   void initState(){
@@ -53,9 +55,9 @@ class _GameScreenState extends State<GameScreen> {
       List<Phase> currentPhases = isDay ? dayPhases : nightPhases;
       /*
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea'){
-        if (lobos[vivo] == !lobos[vivo])
+        if (lobos[Vivo] == !lobos[Vivo])
           lobos -> gana
-        if (lobos[vivo] == 0)
+        if (lobos[Vivo] == 0)
           aldeanos -> gana
         
       }
@@ -76,6 +78,21 @@ class _GameScreenState extends State<GameScreen> {
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
       if (isDay && dayPhases[currentPhaseIndex].name == 'Nominacion') {
         _showTemporizador();
+      }
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Lobos') {
+        _turnLobos();
+      }
+
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Curandero') {
+        _turnCurandero();
+      }
+
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Vidente') {
+        _turnVidente();
+      }
+
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Bruja') {
+        _turnBruja();
       }
     });
   }
@@ -132,6 +149,7 @@ class _GameScreenState extends State<GameScreen> {
     const int totalSeconds = 5 * 60; // 5 minutos en segundos
     int remainingSeconds = totalSeconds;
     Timer? timer;
+    Player? selectedPlayer; // Jugador seleccionado actualmente
 
     showDialog(
       context: context,
@@ -153,10 +171,36 @@ class _GameScreenState extends State<GameScreen> {
                 }
               });
 
-              return Text(
-                "Tiempo restante: ${_formatTime(remainingSeconds)}",
-                style: const TextStyle(fontSize: 18),
-              );
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Tiempo restante: ${_formatTime(remainingSeconds)}",
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(height: 20),
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
             },
           ),
           actions: [
@@ -167,12 +211,293 @@ class _GameScreenState extends State<GameScreen> {
               },
               child: const Text("Cancelar"),
             ),
+            TextButton(
+              onPressed: () {
+                setState((){
+                  selectedPlayer?.state = 'Muerto';
+                  Navigator.of(context).pop();
+                });
+              },
+              child: const Text("Aceptar"),
+            ),
           ],
         );
       },
     ).then((_) {
       if (timer != null) timer?.cancel(); // Asegurarse de cancelar el temporizador
     });
+  }
+
+  //Modal lobos
+  void _turnLobos() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Lobos"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState((){
+                  selectedPlayer?.state = 'Seleccionado';
+                  Navigator.of(context).pop();
+                });
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+    //Modal Curandero
+  void _turnCurandero() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Curandero"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.curado?.toLowerCase() != '2') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (selectedPlayer?.curado == null){
+                  setState(() {
+                    selectedPlayer?.curado = '1';
+                    selectedPlayer?.state = 'Vivo';
+                    Navigator.of(context).pop();
+                  });
+                }
+                else {
+                  if (selectedPlayer?.curado == '1'){
+                    setState(() {
+                      selectedPlayer?.curado = '2';
+                      selectedPlayer?.state = 'Vivo';
+                      Navigator.of(context).pop();
+                    });
+                  }
+                  else {
+                    setState((){
+                      Navigator.of(context).pop();
+                    });
+                  }
+                }
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //Modal Vidente
+  void _turnVidente() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Vidente"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName} - ${player.role}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState((){
+                  selectedPlayer?.state = 'Seleccionado';
+                  Navigator.of(context).pop();
+                });
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //Modal Bruja
+  void _turnBruja() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Bruja"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (selectedPlayer?.role == 'Lobo'){
+                  setState(() {
+                    selectedPlayer?.state = 'Muerto';
+                    Navigator.of(context).pop();
+                  });
+                }
+                else {
+                  setState((){
+                    Navigator.of(context).pop();
+                  });
+                }
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String _formatTime(int totalSeconds) {
@@ -242,7 +567,7 @@ class _GameScreenState extends State<GameScreen> {
           final player = widget.selectedPlayers[index];
 
           // Condición para resaltar el renglón en rojo para hacer los cambios dinamicamente
-          final isAlive = player.state?.toLowerCase() == "vivo";
+          final isAlive = player.state?.toLowerCase() == "Vivo";
 
           return Card(
             color: isAlive ? const Color.fromARGB(147, 49, 220, 98) : Colors.red.shade300,
