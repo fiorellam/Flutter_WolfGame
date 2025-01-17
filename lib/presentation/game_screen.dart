@@ -71,11 +71,40 @@ class _GameScreenState extends State<GameScreen> {
         currentPhaseIndex = 0;
         if (isDay == false) {
             contador++;
-        } 
+        }
       }
 
       // Actualizar el estado del juego
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+      
+      if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
+        // Buscar el primer jugador con estado 'Seleccionado'
+        final Player? selectedPlayer = widget.selectedPlayers.firstWhere(
+          (player) => player.state == 'Seleccionado', // Si no hay ningún jugador con este estado, devuelve null
+        );
+
+        // Asignar el estado 'Muerto' si se encontró un jugador
+        if (selectedPlayer != null) {
+          setState(() {
+            selectedPlayer.state = 'Muerto';
+          });
+        } else {
+          
+        }
+      }
+      final sizeLobo = widget.selectedPlayers
+        .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role == "Lobo")
+        .length;
+      final sizeNoLobos = widget.selectedPlayers
+        .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role != "Lobo")
+        .length;
+      if (sizeLobo == sizeNoLobos || sizeLobo > sizeNoLobos){
+        _whoWon(text: "Ganaron Lobos!!");
+      }else{
+        if (sizeLobo == 0){
+          _whoWon(text: "Ganaron Aldeanos!!");
+        }
+      }
       if (isDay && dayPhases[currentPhaseIndex].name == 'Eleccion Sheriff') {
         _turnSheriff();
       }
@@ -626,6 +655,45 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  void _whoWon({String? text}) {
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Ganador"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('$text')
+              ],
+            );
+
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   String _formatTime(int totalSeconds) {
     final int minutes = ((totalSeconds / 60) % 60).floor();
     final int seconds = (totalSeconds % 60).floor();
@@ -693,10 +761,10 @@ class _GameScreenState extends State<GameScreen> {
           final player = widget.selectedPlayers[index];
 
           // Condición para resaltar el renglón en rojo para hacer los cambios dinamicamente
-          final isAlive = player.state?.toLowerCase() == "vivo";
+          //final isAlive = player.state?.toLowerCase() == "vivo";
 
           return Card(
-            color: isAlive ? const Color.fromARGB(147, 49, 220, 98) : Colors.red.shade300,
+            color: player.state?.toLowerCase() == "vivo" ? const Color.fromARGB(147, 49, 220, 98) : player.state?.toLowerCase() == "muerto" ? Colors.red.shade300 : const Color.fromARGB(136, 229, 255, 0),
             margin: EdgeInsets.all(4),
             child: Padding(
               padding: const EdgeInsets.all(5.0),
