@@ -3,7 +3,6 @@
         "level": "Principiante",
         "dia": [
             {"name": "Asamblea"},
-            {"name": "Eleccion Sheriff"},
             {"name": "Nominacion"}
         ],
         "noche":[

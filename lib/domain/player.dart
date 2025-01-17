@@ -6,7 +6,7 @@ class Player{
   String role;
   String? secondaryRol;
   String? state;
-  String? curado;
+  int curado = 0;
 
   Player({
     required this.id,
@@ -16,7 +16,7 @@ class Player{
     required this.role,
     this.state,
     this.secondaryRol,
-    this.curado
+    this.curado = 0
   });
 
   //Convertir un mapa JSON en un objeto Player
@@ -29,7 +29,7 @@ class Player{
       role: json['role'], 
       secondaryRol: json['secondaryRol'] as String?,
       state: json['state'],
-      curado: json['curado'] as String?
+      curado: json['curado']
     );
   }
 }

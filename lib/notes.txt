@@ -1,0 +1,6 @@
+Puntos a mejorear"
+Sheriff no debe poder ser asignado en las rondas si ya esta muerto
+
+
+La bruja puede saber el rol de otro jugador aunque ese jugador no sea lobo?
+Bruja solo puede saber un rol si este es de lobo

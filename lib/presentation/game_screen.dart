@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:game_wolf/domain/phase.dart';
 import 'package:game_wolf/domain/phases_by_level.dart';
@@ -23,9 +24,15 @@ class _GameScreenState extends State<GameScreen> {
   int contador = 0;
   bool isDay = true;
   String gameState = "Lobos Turno";
+  String nextStatePhase = '';
   List<Phase> dayPhases = [];
   List<Phase> nightPhases = [];
   int currentPhaseIndex = 0;
+  bool hasSheriffBeenSelected = false; //Controla si el sheriff ha sido seleccionado
+  List<String> recordActions = [''];
+  int dayCounter = 0;
+  int nightCounter = 0;
+  int curanderoTimesBeenSaved = 0;
   //String _selectedValue; //Valor inicial
 
   @override
@@ -45,6 +52,7 @@ class _GameScreenState extends State<GameScreen> {
       dayPhases = levelPhases.dia.cast<Phase>();
       nightPhases = levelPhases.noche.cast<Phase>();
       gameState = isDay ? dayPhases[0].name : nightPhases[0].name; // Inicializar el juego
+      nextStatePhase = dayPhases[1].name;
     });
 
   }
@@ -53,15 +61,6 @@ class _GameScreenState extends State<GameScreen> {
      setState(() {
       // Obtener las fases actuales (día o noche)
       List<Phase> currentPhases = isDay ? dayPhases : nightPhases;
-      /*
-      if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea'){
-        if (lobos[Vivo] == !lobos[Vivo])
-          lobos -> gana
-        if (lobos[Vivo] == 0)
-          aldeanos -> gana
-        
-      }
-      */
       // Avanzar al siguiente índice dentro de las fases actuales
       if (currentPhaseIndex < currentPhases.length - 1) {
         currentPhaseIndex++;
@@ -74,19 +73,24 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
 
-      // Actualizar el estado del juego
+       // Actualizar el estado del juego (fase actual)
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
       
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
+        Player? selectedPlayer; 
+        try{
         // Buscar el primer jugador con estado 'Seleccionado'
-        final Player? selectedPlayer = widget.selectedPlayers.firstWhere(
-          (player) => player.state == 'Seleccionado', // Si no hay ningún jugador con este estado, devuelve null
+          selectedPlayer = widget.selectedPlayers.firstWhere(
+          (player) => player.state == 'Seleccionado', 
         );
+        } catch (e) {
+          selectedPlayer = null;
+        }
 
         // Asignar el estado 'Muerto' si se encontró un jugador
         if (selectedPlayer != null) {
           setState(() {
-            selectedPlayer.state = 'Muerto';
+            selectedPlayer?.state = 'Muerto';
           });
         } else {
           
@@ -105,8 +109,19 @@ class _GameScreenState extends State<GameScreen> {
           _whoWon(text: "Ganaron Aldeanos!!");
         }
       }
-      if (isDay && dayPhases[currentPhaseIndex].name == 'Eleccion Sheriff') {
+
+      // Obtener la siguiente fase
+      if (currentPhaseIndex < currentPhases.length - 1) {
+        nextStatePhase = isDay ? dayPhases[currentPhaseIndex + 1].name : nightPhases[currentPhaseIndex + 1].name;
+      } else {
+        // Si estamos en la última fase de un ciclo (día o noche), la siguiente fase será la del ciclo opuesto (día o noche)
+        nextStatePhase = isDay ? nightPhases[0].name : dayPhases[0].name;
+      }
+      // Actualizar el estado del juego
+      if (isDay && dayPhases[currentPhaseIndex].name == 'Eleccion Sheriff' && !hasSheriffBeenSelected) {
         _turnSheriff();
+        hasSheriffBeenSelected = true;
+        //TODO: QUITAR LA SELECCION DEL SHERIFF DE LA LISTA DE FASES
       }
       if (isDay && dayPhases[currentPhaseIndex].name == 'Nominacion') {
         _showTemporizador();
@@ -116,7 +131,21 @@ class _GameScreenState extends State<GameScreen> {
       }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Curandero') {
-        _turnCurandero();
+        List<Player> curanderos = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Curandero'));
+        if(curanderos.isNotEmpty && curanderos[0].state != 'Muerto'){
+            // Aquí colocas el código para realizar la acción de curar, si es necesario
+          print('curanderos ${curanderos[0].name}');
+          _turnCurandero();
+        } else {
+          setState(() {
+            //TODO: saltar a las fases siguientes si el personaje con un rol especifico y unico ya murio
+            // currentPhaseIndex++;
+            // gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+            // nextStatePhase = isDay ? dayPhases[currentPhaseIndex + 1].name : nightPhases[currentPhaseIndex + 1].name;
+            // nextStatePhase;
+            
+          });
+        }
       }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Vidente') {
@@ -301,7 +330,8 @@ class _GameScreenState extends State<GameScreen> {
 
   //temporizador
   void _showTemporizador() {
-    const int totalSeconds = 5 * 60; // 5 minutos en segundos
+    // const int totalSeconds = 5 * 60; // 5 minutos en segundos
+    const int totalSeconds = 5 * 1; // 5 minutos en segundos
     int remainingSeconds = totalSeconds;
     Timer? timer;
     Player? selectedPlayer; // Jugador seleccionado actualmente
@@ -322,7 +352,8 @@ class _GameScreenState extends State<GameScreen> {
                   });
                 } else {
                   t.cancel();
-                  Navigator.of(context).pop();
+                  // Navigator.of(context).pop();
+                  // _randomPlayerToKill();
                 }
               });
 
@@ -353,6 +384,7 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   },
                 ),
+                ElevatedButton(onPressed:_randomPlayerToKill, child: Text("Matar al azar"))
               ],
             );
 
@@ -383,6 +415,56 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  void _randomPlayerToKill(){
+    //Filtrar jugadores vivos
+    List<Player> playersAlive = _getPlayersStillAlive();
+    if(playersAlive.isNotEmpty){
+      Random random = Random();
+      int indexAleatorio = random.nextInt(playersAlive.length);
+
+      //TODO: Falta que solo se puedan seleccionar jugadores que sigan vivos
+      //Obtener player al azar
+      Player playerSelectedToKill = playersAlive[indexAleatorio];
+
+      //Cambiar su estado a muerto
+      // Cambiar su estado a "muerto"
+      setState(() {
+        // Encontrar el jugador correspondiente en la lista original
+        Player playerToUpdate = widget.selectedPlayers.firstWhere(
+          (player) => player == playerSelectedToKill,
+          //  Maneja el caso si no se encuentra el jugador
+        );
+
+        // if (playerToUpdate) {
+          playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
+        // }
+      });
+    }
+    else{
+      showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Mensaje Importante'),
+          content: Text('Ya no hay mas jugadores para matar'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                // Cerrar el AlertDialog cuando se presione "Cerrar"
+                Navigator.of(context).pop();
+              },
+              child: Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+    }
+  }
+
+  List<Player> _getPlayersStillAlive() {
+  return List<Player>.from(widget.selectedPlayers.where((jugador) => jugador.state == 'Vivo'));
+  }
   //Modal lobos
   void _turnLobos() {
 
@@ -467,7 +549,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.curado?.toLowerCase() != '2') // Excluir jugadores Muertos
+                    .where((player) => player.curado != 2) // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -482,7 +564,6 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ],
             );
-
             },
           ),
           actions: [
@@ -494,26 +575,18 @@ class _GameScreenState extends State<GameScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (selectedPlayer?.curado == null){
+                if (selectedPlayer!.curado < 2){
                   setState(() {
-                    selectedPlayer?.curado = '1';
                     selectedPlayer?.state = 'Vivo';
+                    curanderoTimesBeenSaved++;
+                    selectedPlayer!.curado += 1;
                     Navigator.of(context).pop();
                   });
                 }
                 else {
-                  if (selectedPlayer?.curado == '1'){
-                    setState(() {
-                      selectedPlayer?.curado = '2';
-                      selectedPlayer?.state = 'Vivo';
-                      Navigator.of(context).pop();
-                    });
-                  }
-                  else {
-                    setState((){
-                      Navigator.of(context).pop();
-                    });
-                  }
+                  setState((){
+                    Navigator.of(context).pop();
+                  });
                 }
               },
               child: const Text("Aceptar"),
@@ -550,7 +623,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName} - ${player.role}"),
+                      child: Text("${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -559,6 +632,7 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   },
                 ),
+                Text("${selectedPlayer == null ? '' : 'El jugador que elegiste es: ${selectedPlayer?.role}'} ")
               ],
             );
 
@@ -574,7 +648,6 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 setState((){
-                  selectedPlayer?.state = 'Seleccionado';
                   Navigator.of(context).pop();
                 });
               },
@@ -621,6 +694,7 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   },
                 ),
+                Text("${selectedPlayer == null ? '' : 'El jugador que elegiste es: ${selectedPlayer?.role}'} ")
               ],
             );
 
@@ -740,7 +814,7 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                     padding: const EdgeInsets.all(10),
                   ),
-                  child: Text("Siguiente Fase"),
+                  child: Text('Siguiente Fase: $nextStatePhase'),
                   
                 )
               ],
@@ -775,31 +849,31 @@ class _GameScreenState extends State<GameScreen> {
                   Expanded(
                       child: Text(
                           '${index + 1}',
-                          style: new TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                           ))),
                   Expanded(
                       child: Text(
                           '${player.name} ${player.lastName}',
-                          style: new TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                           ))),
                   Expanded(
                       child: Text(
                           player.role,
-                          style: new TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                           ))),
                   Expanded(
                       child: Text(
                           player.secondaryRol ?? '',
-                          style: new TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                           ))),
                   Expanded(
                       child: Text(
                           player.state ?? '',
-                          style: new TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                           ))),
                   SizedBox(
