@@ -29,8 +29,8 @@ class _GameScreenState extends State<GameScreen> {
   List<Phase> nightPhases = [];
   int currentPhaseIndex = 0;
   bool hasSheriffBeenSelected = false; //Controla si el sheriff ha sido seleccionado
-  List<String> recordActions = [''];
-  int dayCounter = 0;
+  List<String> recordActions = ['DIA 1'];
+  int dayCounter = 1;
   int nightCounter = 0;
   int curanderoTimesBeenSaved = 0;
   //String _selectedValue; //Valor inicial
@@ -70,6 +70,12 @@ class _GameScreenState extends State<GameScreen> {
         currentPhaseIndex = 0;
         if (isDay == false) {
             contador++;
+            nightCounter++;
+            recordActions.add('NOCHE $nightCounter');
+        } 
+        if(isDay){
+          dayCounter++;
+          recordActions.add('DIA $dayCounter');
         }
       }
 
@@ -134,7 +140,6 @@ class _GameScreenState extends State<GameScreen> {
         List<Player> curanderos = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Curandero'));
         if(curanderos.isNotEmpty && curanderos[0].state != 'Muerto'){
             // Aquí colocas el código para realizar la acción de curar, si es necesario
-          print('curanderos ${curanderos[0].name}');
           _turnCurandero();
         } else {
           setState(() {
@@ -142,8 +147,6 @@ class _GameScreenState extends State<GameScreen> {
             // currentPhaseIndex++;
             // gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
             // nextStatePhase = isDay ? dayPhases[currentPhaseIndex + 1].name : nightPhases[currentPhaseIndex + 1].name;
-            // nextStatePhase;
-            
           });
         }
       }
@@ -163,6 +166,10 @@ class _GameScreenState extends State<GameScreen> {
       TextEditingController(text: player.secondaryRol ?? '');
     final TextEditingController stateController = 
       TextEditingController(text: player.state);
+    final TextEditingController numberSeatController = 
+      TextEditingController(text: player.numberSeat);
+    final TextEditingController roleController = 
+      TextEditingController(text: player.role);
 
     showDialog(
       context: context,
@@ -181,6 +188,14 @@ class _GameScreenState extends State<GameScreen> {
                   controller: stateController,
                   decoration: const InputDecoration(labelText: 'Estado'),
                 ),
+                TextField(
+                  controller: numberSeatController,
+                  decoration: const InputDecoration(labelText: 'No. Asiento'),
+                ),
+                TextField(
+                  controller: roleController,
+                  decoration: const InputDecoration(labelText: 'No. Asiento'),
+                ),
               ],
             ),
           ),
@@ -194,6 +209,8 @@ class _GameScreenState extends State<GameScreen> {
                 setState(() {
                   player.secondaryRol = secondaryRolController.text;
                   player.state = stateController.text;
+                  player.numberSeat = numberSeatController.text;
+                  player.role = roleController.text;
                 });
                 Navigator.of(context).pop();
               },
@@ -330,8 +347,8 @@ class _GameScreenState extends State<GameScreen> {
 
   //temporizador
   void _showTemporizador() {
-    // const int totalSeconds = 5 * 60; // 5 minutos en segundos
-    const int totalSeconds = 5 * 1; // 5 minutos en segundos
+    const int totalSeconds = 5 * 60; // 5 minutos en segundos
+    // const int totalSeconds = 5 * 1; // 5 minutos en segundos
     int remainingSeconds = totalSeconds;
     Timer? timer;
     Player? selectedPlayer; // Jugador seleccionado actualmente
@@ -384,7 +401,10 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   },
                 ),
-                ElevatedButton(onPressed:_randomPlayerToKill, child: Text("Matar al azar"))
+                ElevatedButton(onPressed:() {
+                  _randomPlayerToKill();
+                  Navigator.of(context).pop();
+                  }, child: Text("Matar al azar"))
               ],
             );
 
@@ -401,6 +421,8 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 setState((){
+                  String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                  recordActions.add(action);
                   selectedPlayer?.state = 'Muerto';
                   Navigator.of(context).pop();
                 });
@@ -437,6 +459,8 @@ class _GameScreenState extends State<GameScreen> {
 
         // if (playerToUpdate) {
           playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
+          String action = 'En la pirinola murió ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
+          recordActions.add(action);
         // }
       });
     }
@@ -515,6 +539,8 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 setState((){
+                  String action = 'Lobos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name }';
+                  recordActions.add(action);
                   selectedPlayer?.state = 'Seleccionado';
                   Navigator.of(context).pop();
                 });
@@ -526,7 +552,19 @@ class _GameScreenState extends State<GameScreen> {
       },
     );
   }
-
+  Player? _getRolePlayer(String roleName){
+    Player? player ;
+        try{
+        // Buscar el primer jugador con estado 'Seleccionado'
+          player = widget.selectedPlayers.firstWhere(
+          (player) => player.role == roleName,
+          //  Maneja el caso si no se encuentra el jugador
+        );
+        } catch (e) {
+          player = null;
+        }
+      return player;
+  }
     //Modal Curandero
   void _turnCurandero() {
 
@@ -575,19 +613,29 @@ class _GameScreenState extends State<GameScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (selectedPlayer!.curado < 2){
+                if (selectedPlayer?.curado == null){
                   setState(() {
                     selectedPlayer?.state = 'Vivo';
-                    curanderoTimesBeenSaved++;
-                    selectedPlayer!.curado += 1;
+                    selectedPlayer?.curado += 1;
                     Navigator.of(context).pop();
                   });
+                } else{
+                  if (selectedPlayer!.curado < 2){
+                    setState(() {
+                      selectedPlayer?.state = 'Vivo';
+                      curanderoTimesBeenSaved++;
+                      selectedPlayer!.curado += 1;
+                      Navigator.of(context).pop();
+                    });
+                  }
+                  else {
+                    setState((){
+                      Navigator.of(context).pop();
+                    });
+                  }
                 }
-                else {
-                  setState((){
-                    Navigator.of(context).pop();
-                  });
-                }
+                String action = "Curanderos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name}";
+                recordActions.add(action);
               },
               child: const Text("Aceptar"),
             ),
@@ -648,6 +696,8 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 setState((){
+                  String action = "Vidente quiso saber el rol de ${selectedPlayer?.role} - ${selectedPlayer?.name}";
+                  recordActions.add(action);
                   Navigator.of(context).pop();
                 });
               },
@@ -694,7 +744,11 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   },
                 ),
-                Text("${selectedPlayer == null ? '' : 'El jugador que elegiste es: ${selectedPlayer?.role}'} ")
+                Text(selectedPlayer != null ? 
+                      (selectedPlayer?.role == 'Lobo' ? 
+                          'El jugador que elegiste es: ${selectedPlayer?.role}' 
+                          :'No puedes saber el rol de este jugador')
+                      : 'Aun no seleccionas ningun jugador')
               ],
             );
 
@@ -712,6 +766,8 @@ class _GameScreenState extends State<GameScreen> {
                 if (selectedPlayer?.role == 'Lobo'){
                   setState(() {
                     selectedPlayer?.state = 'Muerto';
+                    String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                    recordActions.add(action);
                     Navigator.of(context).pop();
                   });
                 }
@@ -779,7 +835,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('JUEGO LOBO - Nivel: ${widget.level}'),
+        title: Text('JUEGO LOBO - Nivel: ${widget.level} Daycounter: $dayCounter Night: $nightCounter'),
       ),
       body: Container(
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
@@ -805,6 +861,30 @@ class _GameScreenState extends State<GameScreen> {
                     child: Text("Estado: $gameState"),
                   ) ,
                 ),
+                FilledButton(
+                  onPressed:(){},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0)
+                    ),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                  child: Text('Poción 1'),
+                  
+                ),
+                FilledButton(
+                  onPressed: (){},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0)
+                    ),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                  child: Text('Poción 2'),
+                  
+                ),
                 //Boton siguiente fase
                 FilledButton(
                   onPressed: _goToNextPhase,
@@ -820,6 +900,21 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
             _buildPlayerListView(),
+            
+        // Aquí usamos un ListView para mostrar las acciones
+            Container(
+              height: 100,
+              child: ListView.builder(
+                itemCount: recordActions.length,
+                itemBuilder: (context, index) {
+                  // return ListTile(
+                  //   title: Text(recordActions[index]), // Mostrar cada acción en la lista
+                  // );
+                  return  Text(recordActions[index]); // Mostrar cada acción en la lista
+                  
+                },
+              ),
+            )
           ],
         ),
       ),
@@ -855,6 +950,12 @@ class _GameScreenState extends State<GameScreen> {
                   Expanded(
                       child: Text(
                           '${player.name} ${player.lastName}',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                          ))),
+                  Expanded(
+                      child: Text(
+                          player.numberSeat ?? '',
                           style: TextStyle(
                             fontSize: 20.0,
                           ))),

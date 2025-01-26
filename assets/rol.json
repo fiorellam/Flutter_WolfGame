@@ -13,10 +13,10 @@
         "roles": [
             {"name": "Curandero"},
             {"name": "Vidente"},
-            {"name": "Bruja"},
+            {"name": "Protector"},
             {"name": "Granjero"},
-            {"name": "Cupido"},
-            {"name": "Protector"}
+            {"name": "Bruja"},
+            {"name": "Cupido"}
         ]
     },
     {

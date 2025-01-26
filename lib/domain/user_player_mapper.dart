@@ -10,7 +10,8 @@ class UserPlayerMapper{
       lastName: user.lastName,
       phone: user.phone,
       role: "Granjero",
-      state: "Vivo" //Estado inicial
+      state: "Vivo", //Estado inicial
+      numberSeat: user.numberSeat
     );
   }
 
@@ -20,7 +21,8 @@ class UserPlayerMapper{
       id: player.id,
       name: player.name,
       lastName: player.lastName,
-      phone: player.phone
+      phone: player.phone,
+      numberSeat: player.numberSeat
     );
   }
 }

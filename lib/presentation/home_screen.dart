@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen>{
     final TextEditingController nameController = TextEditingController();
     final TextEditingController lastNameController = TextEditingController();
     final TextEditingController phoneController = TextEditingController();
+    final TextEditingController numberSeatController = TextEditingController();
 
     showDialog(
       context: context,
@@ -67,6 +68,10 @@ class _HomeScreenState extends State<HomeScreen>{
                 decoration: const InputDecoration(labelText: 'Teléfono'),
                 keyboardType: TextInputType.phone,
               ),
+              TextField(
+                controller: numberSeatController,
+                decoration: const InputDecoration(labelText: 'Asiento'),
+              ),
             ],
           ),
           actions: [
@@ -80,14 +85,17 @@ class _HomeScreenState extends State<HomeScreen>{
               onPressed: () {
                 // Validar y agregar el nuevo jugador
                 if (nameController.text.isNotEmpty &&
-                    lastNameController.text.isNotEmpty &&
-                    phoneController.text.isNotEmpty) {
+                    // lastNameController.text.isNotEmpty &&
+                    phoneController.text.isNotEmpty 
+                    // numberSeatController.text.isNotEmpty
+                    ) {
                   setState(() {
                     final newUser = User(
                       id: DateTime.now().millisecondsSinceEpoch,
                       name: nameController.text,
                       lastName: lastNameController.text,
                       phone: phoneController.text,
+                      numberSeat: numberSeatController.text
                     );
                     _players.add(newUser);
                     // Actualiza _filteredPlayers dinámicamente solo si contiene filtros
