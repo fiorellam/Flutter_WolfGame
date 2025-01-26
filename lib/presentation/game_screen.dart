@@ -944,39 +944,27 @@ class _GameScreenState extends State<GameScreen> {
                   Expanded(
                       child: Text(
                           '${index + 1}',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                          style: TextStyle( fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           '${player.name} ${player.lastName}',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                          style: TextStyle(fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           player.numberSeat ?? '',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                          style: TextStyle(fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           player.role,
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                          style: TextStyle(fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           player.secondaryRol ?? '',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                          style: TextStyle(fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           player.state ?? '',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                          ))),
+                          style: TextStyle(fontSize: 20.0,))),
                   SizedBox(
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas
