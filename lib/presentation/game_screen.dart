@@ -6,6 +6,8 @@ import 'package:game_wolf/domain/phases_by_level.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/services/phases_assign.dart';
 //import 'package:game_wolf/presentation/widgets/dropdown_players.dart';
+//import 'package:url_launcher/url_launcher.dart';
+//import 'package:flutter_sms/flutter_sms.dart';
 
 class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
@@ -972,6 +974,15 @@ class _GameScreenState extends State<GameScreen> {
                       icon: const Icon(Icons.edit, color: Colors.white),
                       onPressed: () => _editItem(index, player),
                     ),
+                  ),
+                  SizedBox(
+                     width: 60.0,  // Aquí puedes establecer el ancho del IconButton
+                     height: 35.0,  // Altura si lo necesitas
+                     child: IconButton(
+                      icon: const Icon(Icons.message, color: Colors.white),
+                      //onPressed: () => _sendSms(player.role, player.phone),
+                      onPressed: () => _editItem(index, player),
+                    ),
                   )
                 ],
               ),
@@ -981,4 +992,8 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
+
+  /*void _sendSms(String text, String phone) async{
+    await sendSMS(message: "Tu rol es: $text", recipients: phone);
+  }*/
 }
