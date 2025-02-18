@@ -109,10 +109,10 @@ class _GameScreenState extends State<GameScreen> {
         .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role != "Lobo")
         .length;
       if (sizeLobo == sizeNoLobos || sizeLobo > sizeNoLobos){
-        _whoWon(text: "Ganaron Lobos!!");
+        _whoWonDialog(text: "Ganaron Lobos!!");
       }else{
         if (sizeLobo == 0){
-          _whoWon(text: "Ganaron Aldeanos!!");
+          _whoWonDialog(text: "Ganaron Aldeanos!!");
         }
       }
 
@@ -785,7 +785,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  void _whoWon({String? text}) {
+  void _whoWonDialog({String? text}) {
 
     showDialog(
       context: context,

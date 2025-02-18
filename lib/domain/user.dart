@@ -3,7 +3,7 @@ class User{
   final String name;
   final String lastName;
   final String phone;
-  final String numberSeat;
+  final String? numberSeat;
 
   User({required this.id, required this.name, required this.lastName, required this.phone, required this.numberSeat});
   // Constructor para convertir un mapa JSON en un objeto Person

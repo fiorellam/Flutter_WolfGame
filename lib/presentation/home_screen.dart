@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:game_wolf/database/database_helper.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/domain/user_player_mapper.dart';
 import 'package:game_wolf/presentation/game_screen.dart';
@@ -24,9 +25,14 @@ class _HomeScreenState extends State<HomeScreen>{
   //En Dart, un Set es una colección no ordenada de elementos únicos. A diferencia de una List, que permite elementos duplicados, 
   //un Set garantiza que cada elemento se aparezca solo una vez. Por lo tanto, si intentas agregar un elemento que ya existe en un Set, no se agregará de nuevo.
   Set<User> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
   
   //Navegar a nueva pantalla
   void _startGameScreen() async{
+    if(_selectedPlayers.length < 7){
+      _showMinimumPlayersDialog();
+      return;
+    }
     //Llamar funcion que convierte lista de User a Player
     List<Player> gamePlayers = convertUsersToPlayers(_selectedPlayers.toList());
     //Asignar roles a los jugadores
@@ -37,8 +43,28 @@ class _HomeScreenState extends State<HomeScreen>{
       MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers, level: _selectedValue, ))
     );
   }
-  
-  //Navegar a create Screen
+
+  // Método para mostrar un AlertDialog cuando hay menos de 7 jugadores
+void _showMinimumPlayersDialog() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Jugadores insuficientes"),
+        content: const Text("Debes seleccionar al menos 7 jugadores para iniciar la partida."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Cerrar el diálogo
+            },
+            child: const Text("Aceptar"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
   // Agregar nuevo usuario mediante un modal
   void _showDialogCreateUser() {
     // Controladores para el formulario
@@ -82,14 +108,14 @@ class _HomeScreenState extends State<HomeScreen>{
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed:  () async {
                 // Validar y agregar el nuevo jugador
                 if (nameController.text.isNotEmpty &&
                     // lastNameController.text.isNotEmpty &&
                     phoneController.text.isNotEmpty 
                     // numberSeatController.text.isNotEmpty
                     ) {
-                  setState(() {
+                  // setState(()  {
                     final newUser = User(
                       id: DateTime.now().millisecondsSinceEpoch,
                       name: nameController.text,
@@ -97,12 +123,18 @@ class _HomeScreenState extends State<HomeScreen>{
                       phone: phoneController.text,
                       numberSeat: numberSeatController.text
                     );
-                    _players.add(newUser);
+                    // _players.add(newUser);
+                    final db = await _databaseHelper.getDatabase();
+                    await _databaseHelper.insertUser(db, newUser);
+
+                    //RECARGAR LA LISTA DE JUGADORES DESDE LA BASE DE DATOS
+                    await _loadPlayers();
+                  setState((){});
                     // Actualiza _filteredPlayers dinámicamente solo si contiene filtros
                   if (_filteredPlayers.length != _players.length) {
                     _filteredPlayers = List.from(_players);
                   }
-                  });
+                  // });
                   Navigator.of(context).pop(); // Cerrar el modal
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +149,70 @@ class _HomeScreenState extends State<HomeScreen>{
       },
     );
   }
+
+  void _showDialogEditUser(User user){
+    final TextEditingController nameController = TextEditingController(text: user.name);
+    final TextEditingController lastNameController = TextEditingController(text: user.lastName);
+    final TextEditingController phoneController = TextEditingController(text: user.phone);
+    final TextEditingController numberSeatController = TextEditingController(text: user.numberSeat);
+
+    showDialog(
+      context: context, 
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar Jugador'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nombre')),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Apellido')),
+              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono')),
+              TextField(controller: numberSeatController, decoration: const InputDecoration(labelText: 'Asiento')),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+            ElevatedButton(
+              onPressed: () async {
+                final db = await _databaseHelper.getDatabase();
+                final updatedUser = User(
+                  id: user.id,
+                  name: nameController.text,
+                  lastName: lastNameController.text,
+                  phone: phoneController.text,
+                  numberSeat: numberSeatController.text,
+                );
+
+                await _databaseHelper.updateUser(db, updatedUser);
+
+                setState(() {
+                  int indexUser = _players.indexWhere((us) => us.id == user.id);
+                  if(indexUser != -1 ){
+                    _players[indexUser] = updatedUser;
+                  }
+                  // También actualizar la lista filtrada si se está usando
+                  int filteredIndex = _filteredPlayers.indexWhere((u) => u.id == user.id);
+                    if (filteredIndex != -1) {
+                      _filteredPlayers[filteredIndex] = updatedUser;
+                    }
+                  });
+                await _loadPlayers(); // Recargar lista
+                Navigator.of(context).pop();
+              },
+              child: const Text('Guardar Cambios'),
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  void _deleteUser(User user) async {
+    final db = await _databaseHelper.getDatabase();
+    await _databaseHelper.deleteUser(db, user);
+    await _loadPlayers(); // Recargar lista
+  }
+
   List<Player> convertUsersToPlayers(List<User> users){
     return users.map((user){
       return UserPlayerMapper.userToPlayer(user);
@@ -130,14 +226,35 @@ class _HomeScreenState extends State<HomeScreen>{
     _loadPlayers();
   }
 
-  //Cargar jugadores desde el JSON
+  // Cargar jugadores desde el JSON
   Future<void> _loadPlayers() async{
-    final players = await loadPlayersJson();
+    final db = await _databaseHelper.getDatabase();
+    final usersData = await _databaseHelper.getUsers(db);
+
+     // Guardar los IDs de los jugadores seleccionados
+    final selectedIds = _selectedPlayers.map((p) => p.id).toSet();
     setState(() {
-      _players = players;
-      _filteredPlayers = players;//Inicializa los jugadores filtrados
+      _players = usersData.map((userData){
+        return User(
+          id: userData['id'],
+          name: userData['name'],
+          lastName: userData['lastName'],
+          phone: userData['phone'],
+          numberSeat: userData['numberSeat'],
+        );
+      }).toList();
+      _filteredPlayers = _players;//Inicializa los jugadores filtrados
+      // Restaurar la selección de los jugadores previos
+    _selectedPlayers = _players.where((p) => selectedIds.contains(p.id)).toSet();
     });
   }
+  // Future<void> _loadPlayers() async{
+  //   final players = await loadPlayersJson();
+  //   setState(() {
+  //     _players = players;
+  //     _filteredPlayers = players;//Inicializa los jugadores filtrados
+  //   });
+  // }
   //Función que será llamada cuando cambie el valor del dropdown
   void _handleDropdownLevelChange(String value){
     setState(() {
@@ -239,6 +356,16 @@ class _HomeScreenState extends State<HomeScreen>{
   }
 //Separar la lista de jugadores filtradoes en un metodo
   Widget _buildPlayerListView(){
+    if(_players.isEmpty){
+      return Expanded(
+        child: Center (
+          child: Text(
+            'Aun no hay jugadores registrados.',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        ),
+      );
+    }
     return Expanded(
       child: ListView.builder(
         itemCount: _filteredPlayers.length, // Muestra los elementos filtrados
@@ -251,14 +378,27 @@ class _HomeScreenState extends State<HomeScreen>{
                 isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
                 color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
               ),
-              title: Text('${player.name} ${player.lastName}',
+              title: Text('${player.name} ${player.lastName}      Tel: ${player.phone}      Asiento: ${player.numberSeat}',
                 style: new TextStyle(
                   fontSize: 20.0,
                 )),
-              trailing: Text('Tel: ${player.phone}',
-                style: new TextStyle(
-                  fontSize: 20.0,
-                )),
+              // subtitle: Text('Tel: ${player.phone}',
+              //   style: new TextStyle(
+              //     fontSize: 20.0,
+              //   )),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue),
+                    onPressed: () => _showDialogEditUser(player),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteUser(player),
+                  ),
+                ],
+              ),
               onTap: () => _onSelectPlayer(player), // Maneja la selección
             ),
           );
