@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen>{
   //En Dart, un Set es una colección no ordenada de elementos únicos. A diferencia de una List, que permite elementos duplicados, 
   //un Set garantiza que cada elemento se aparezca solo una vez. Por lo tanto, si intentas agregar un elemento que ya existe en un Set, no se agregará de nuevo.
   Set<User> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
+  bool _allSelected = false;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   
   //Navegar a nueva pantalla
@@ -282,12 +283,31 @@ void _showMinimumPlayersDialog() {
     });
   }
 
+  //metodo para seleccionar y deseleccionar
+  void _toggleSelectAll() {
+    setState(() {
+      if (_allSelected) {
+        _selectedPlayers.clear();
+      } else {
+        _selectedPlayers.addAll(_filteredPlayers);
+      }
+      _allSelected = !_allSelected;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: Text('Buscar Jugadores'),
+        actions: [
+          IconButton(
+            icon: Icon(_allSelected ? Icons.deselect : Icons.select_all),
+            onPressed: _toggleSelectAll,
+            tooltip: _allSelected ? "Deseleccionar todos" : "Seleccionar todos",
+          ),
+        ],
       ),
       body: Container(
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
@@ -297,7 +317,7 @@ void _showMinimumPlayersDialog() {
               children: [
                 //SearchBar Ocupa el mayor espacio
                 Expanded(
-                     // Usamos el widget SearchBar
+                  // Usamos el widget SearchBar
                   child: SearchBar2(items: _players.map((player) => player.name).toList(), onFilter: _onFilter),
                 ),
                 const SizedBox(width: 10),
@@ -318,7 +338,12 @@ void _showMinimumPlayersDialog() {
                           borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
                         ),
                   ),
-                  child: const Text("Guardar Jugadores"),)
+                  child: const Text("Guardar Jugadores"),),
+                const SizedBox(width: 10),
+                FilledButton(
+                  onPressed: _toggleSelectAll,
+                  child: Text(_allSelected ? "Deseleccionar todos" : "Seleccionar todos"),
+                ),
               ],
 
             ),
