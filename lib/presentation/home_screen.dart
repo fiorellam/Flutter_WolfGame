@@ -16,6 +16,10 @@ class HomeScreen extends StatefulWidget{
 }
 
 class _HomeScreenState extends State<HomeScreen>{
+  //esto es para modificar las variables desde la funcion _adminPartida
+  int _numLobos = 0;
+  int _numProtectores = 0;
+  int _numCazadores = 0;
   //Constante
   static const List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
   String _selectedValue = levelsList.first; //Valor inicial
@@ -37,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen>{
     //Llamar funcion que convierte lista de User a Player
     List<Player> gamePlayers = convertUsersToPlayers(_selectedPlayers.toList());
     //Asignar roles a los jugadores
-    await assignRolesToPlayers(gamePlayers, _selectedValue);
+    await assignRolesToPlayers(gamePlayers, _selectedValue, _numLobos, _numProtectores, _numCazadores);
 
     Navigator.push(
       context, 
@@ -295,6 +299,59 @@ void _showMinimumPlayersDialog() {
     });
   }
 
+  //mavegar a create screen
+  void _adminPartida(){
+    //controladores para el formulario
+    final TextEditingController loboController = TextEditingController();
+    final TextEditingController protectorController = TextEditingController();
+    final TextEditingController cazadorController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Administrator de Partida'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: loboController,
+                decoration: InputDecoration(labelText: 'Lobos $_numLobos')
+              ),
+              TextField(
+                controller: protectorController,
+                decoration: InputDecoration(labelText: 'Protectores $_numProtectores')
+              ),
+              TextField(
+                controller: cazadorController,
+                decoration: InputDecoration(labelText: 'Cazadores $_numCazadores')
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); //cerrar el modal sin guardar
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _numLobos = int.tryParse(loboController.text) ?? 0;
+                  _numProtectores = int.tryParse(protectorController.text) ?? 0;
+                  _numCazadores = int.tryParse(cazadorController.text) ?? 0;
+                });
+                Navigator.of(context).pop(); //cerrar modal
+              },
+              child: const Text('Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -360,6 +417,23 @@ void _showMinimumPlayersDialog() {
                   ),
                 ),
                 DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),
+                Text('Lobos: $_numLobos | Protector: $_numProtectores | Cazador: $_numCazadores',
+                  style: TextStyle(
+                    fontSize: 18.0, //cambia este valor al tamaño que deseas
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(4.0),
+                  child: FilledButton(
+                    onPressed: _adminPartida,
+                    style: FilledButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
+                      ),
+                    ), 
+                    child: const Text("Editar Partida"),
+                  ),
+                ),
                 Container(
                   padding: const EdgeInsets.all(4.0),
                   child: FilledButton(

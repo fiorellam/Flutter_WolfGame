@@ -43,7 +43,7 @@ Future<List<RoleAssignment>> loadRolesFromJson() async{
 }
 
 // Ejemplo de cómo usarlo
-Future<void> assignRolesToPlayers(List<Player> players, String level) async {
+Future<void> assignRolesToPlayers(List<Player> players, String level, int numLobos, int numProtectores, int numCazadores) async {
   // Cargar los roles desde el archivo JSON
   List<RoleAssignment> rolesByLevel = await loadRolesFromJson();
 
@@ -67,7 +67,7 @@ Future<void> assignRolesToPlayers(List<Player> players, String level) async {
 
   // Determinar cuántos lobos asignar según el número de jugadores
   int numberOfPlayers = players.length;
-  int numberOfWolves = await getNumberOfWolves(numberOfPlayers);
+  int numberOfWolves = numLobos != 0 ? numLobos : await getNumberOfWolves(numberOfPlayers);
 
   List<String> roles = availableRoles;
   roles.addAll(List.filled(numberOfWolves, "Lobo"));
