@@ -6,7 +6,7 @@ import 'package:game_wolf/domain/phases_by_level.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/services/phases_assign.dart';
 //import 'package:game_wolf/presentation/widgets/dropdown_players.dart';
-//import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher.dart';
 //import 'package:flutter_sms/flutter_sms.dart';
 
 class GameScreen extends StatefulWidget {
@@ -980,8 +980,10 @@ class _GameScreenState extends State<GameScreen> {
                      height: 35.0,  // Altura si lo necesitas
                      child: IconButton(
                       icon: const Icon(Icons.message, color: Colors.white),
-                      //onPressed: () => _sendSms(player.role, player.phone),
-                      onPressed: () => _editItem(index, player),
+                      onPressed: () {
+                        launch('sms:${player.phone}?body=${player.role}');
+                      },
+                      //onPressed: () => _editItem(index, player),
                     ),
                   )
                 ],
