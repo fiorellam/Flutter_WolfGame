@@ -15,9 +15,7 @@
     {
         "level": "Intermedio",
         "dia": [
-            {"name": "Cupido"},
             {"name": "Asamblea"},
-            {"name": "Eleccion Sheriff"},
             {"name": "Nominacion"}
         ],
         "noche":[
@@ -25,8 +23,7 @@
             {"name": "Lobos"},
             {"name": "Curandero"},
             {"name": "Vidente"},
-            {"name": "Bruja"},
-            {"name": "Granjero"}
+            {"name": "Bruja"}
         ]
     },
     {
@@ -45,8 +42,7 @@
             {"name": "Alcalde"},
             {"name": "Vidente"},
             {"name": "Bruja"},
-            {"name": "Cazador"},
-            {"name": "Granjero"}
+            {"name": "Cazador"}
         ]
     },
     {
@@ -68,7 +64,6 @@
             {"name": "Ladron"},
             {"name": "Cazador"},
             {"name": "Esbirro"},
-            {"name": "Granjero"},
             {"name": "Niña"},
             {"name": "Lobo solitario"},
             {"name": "Leproso"}

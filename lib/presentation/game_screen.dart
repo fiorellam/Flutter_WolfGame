@@ -31,6 +31,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Phase> nightPhases = [];
   int currentPhaseIndex = 0;
   bool hasSheriffBeenSelected = false; //Controla si el sheriff ha sido seleccionado
+  bool hasCupidoBeenSelected = false; //Controla si cupido ya paso su turno
   List<String> recordActions = ['DIA 1'];
   int dayCounter = 1;
   int nightCounter = 0;
@@ -58,10 +59,10 @@ class _GameScreenState extends State<GameScreen> {
     });
 
     // Turno para Cupido
-    if (isDay && dayPhases[currentPhaseIndex].name == 'Cupido') {
+    if (isDay && levelPhases.level != 'Principiante' && !hasCupidoBeenSelected) {
       _turnCupido();
+      hasCupidoBeenSelected = true;
     }
-
   }
 
   void _goToNextPhase() {
@@ -88,25 +89,57 @@ class _GameScreenState extends State<GameScreen> {
 
        // Actualizar el estado del juego (fase actual)
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
-
+      
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
         Player? selectedPlayer; 
+        Player? selectedPlayer2;
         try{
         // Buscar el primer jugador con estado 'Seleccionado'
           selectedPlayer = widget.selectedPlayers.firstWhere(
-          (player) => player.state == 'Seleccionado', 
-        );
+          (player) => player.state == 'Seleccionado',);
+          if (selectedPlayer?.flechado != null){
+            selectedPlayer2 = widget.selectedPlayers.firstWhere(
+            (player) => selectedPlayer?.phone == player.flechado);
+          }
         } catch (e) {
           selectedPlayer = null;
         }
 
-        // Asignar el estado 'Muerto' si se encontró un jugador
-        if (selectedPlayer != null) {
-          setState(() {
-            selectedPlayer?.state = 'Muerto';
-          });
-        } else {
-          
+        if(selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true){
+          if(selectedPlayer?.flechado != null){
+            setState(() {
+              selectedPlayer?.state = 'Vivo';
+              selectedPlayer2?.state = 'Vivo';
+              String action = 'Se salvaron ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name }';
+              recordActions.add(action);
+            });
+          } else {
+            setState(() {
+              selectedPlayer?.state = 'Vivo';
+              String action = 'Se salvo ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+              recordActions.add(action);
+            });
+          }
+        } else{
+          // Asignar el estado 'Muerto' si se encontró un jugador
+          if (selectedPlayer != null) {
+            if(selectedPlayer?.flechado == null) {
+              setState(() {
+                selectedPlayer?.state = 'Muerto';
+                String action = 'Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                recordActions.add(action);
+              });
+            } else {
+              setState(() {
+                selectedPlayer?.state = 'Muerto';
+                selectedPlayer2?.state = 'Muerto';
+                String action = 'Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}';
+                recordActions.add(action);
+              });
+            }
+          } else {
+            
+          }
         }
       }
       final sizeLobo = widget.selectedPlayers
@@ -143,7 +176,18 @@ class _GameScreenState extends State<GameScreen> {
       // Turno para Protector
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Protector') {
         //for (var i = 0; i < 2; i++){
-          _turnProtector();
+        Player? selectedPlayer; 
+        try{
+        // Buscar el primer jugador con estado 'Seleccionado'
+          selectedPlayer = widget.selectedPlayers.firstWhere(
+          (player) => player.protegidoActivo == true,);
+          setState((){
+            selectedPlayer?.protegidoActivo = false;
+          });
+        } catch (e) {
+          selectedPlayer = null;
+        }
+        _turnProtector();
         //}
       }
 
@@ -259,7 +303,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .where((player) => player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -320,7 +364,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto' && player.state?.toLowerCase() != 'Sheriff') // Excluir jugadores Muertos
+                    .where((player) => player.state?.toLowerCase() != 'muerto' && player.state?.toLowerCase() != 'Sheriff') // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -403,7 +447,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto' && player.protegidoActivo != true) // Excluir jugadores Muertos
+                    .where((player) => player.state?.toLowerCase() != 'muerto' && player.protegidoActivo != true) // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -526,7 +570,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => (player.state?.toLowerCase() != 'Muerto' && player.protegidoActivo != true)) // Excluir jugadores Muertos
+                    .where((player) => (player.state?.toLowerCase() != 'muerto' && player.protegidoActivo != true)) // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -844,7 +888,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .where((player) => player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -890,6 +934,7 @@ class _GameScreenState extends State<GameScreen> {
   void _turnBruja() {
 
     Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? selectedPlayer2; // Jugador que esta relacionado con el anterior
 
     showDialog(
       context: context,
@@ -908,7 +953,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .where((player) => player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -940,18 +985,42 @@ class _GameScreenState extends State<GameScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (selectedPlayer?.role == 'Lobo'){
-                  setState(() {
-                    selectedPlayer?.state = 'Muerto';
-                    String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                if (selectedPlayer?.flechado != null){
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere(
+                  (player) => selectedPlayer?.phone == player.flechado);
+                }
+                //optimizar este bloque
+                //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
+                if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
+                  setState((){
+                    String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero no pudo matarlo porque esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}';
                     recordActions.add(action);
                     Navigator.of(context).pop();
                   });
-                }
-                else {
-                  setState((){
-                    Navigator.of(context).pop();
-                  });
+                } else{
+                  if (selectedPlayer?.flechado != null && selectedPlayer?.role == 'Lobo'){
+                    setState(() {
+                      selectedPlayer?.state = 'Muerto';
+                      selectedPlayer2?.state = 'Muerto';
+                      String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mato a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado';
+                      recordActions.add(action);
+                      Navigator.of(context).pop();
+                    });
+                  } else {
+                    if (selectedPlayer?.role == 'Lobo'){
+                      setState(() {
+                        selectedPlayer?.state = 'Muerto';
+                        String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                        recordActions.add(action);
+                        Navigator.of(context).pop();
+                      });
+                    }
+                    else {
+                      setState((){
+                        Navigator.of(context).pop();
+                      });
+                    }
+                  }
                 }
               },
               child: const Text("Aceptar"),
