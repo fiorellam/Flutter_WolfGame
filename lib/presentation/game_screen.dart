@@ -411,6 +411,7 @@ class _GameScreenState extends State<GameScreen> {
     int remainingSeconds = totalSeconds;
     Timer? timer;
     Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? selectedPlayer2; // Jugador seleccionado actualmente
 
     showDialog(
       context: context,
@@ -479,12 +480,33 @@ class _GameScreenState extends State<GameScreen> {
             ),
             TextButton(
               onPressed: () {
-                setState((){
-                  String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
-                  recordActions.add(action);
-                  selectedPlayer?.state = 'Muerto';
-                  Navigator.of(context).pop();
-                });
+                if (selectedPlayer?.flechado != null){
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere(
+                  (player) => selectedPlayer?.phone == player.flechado);
+                  
+                  if ((selectedPlayer2?.protegidoActivo == true)){
+                    setState((){
+                      String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero esta protegido';
+                      recordActions.add(action);
+                      Navigator.of(context).pop();
+                    });
+                  } else {
+                    setState((){
+                      String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado';
+                      recordActions.add(action);
+                      selectedPlayer?.state = 'Muerto';
+                      selectedPlayer2?.state = 'Muerto';
+                      Navigator.of(context).pop();
+                    });
+                  }
+                } else {
+                  setState((){
+                    String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                    recordActions.add(action);
+                    selectedPlayer?.state = 'Muerto';
+                    Navigator.of(context).pop();
+                  });
+                }
               },
               child: const Text("Aceptar"),
             ),
@@ -726,7 +748,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.protegido != 2) // Excluir jugadores Muertos
+                    .where((player) => player.protegido != 2 && player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
