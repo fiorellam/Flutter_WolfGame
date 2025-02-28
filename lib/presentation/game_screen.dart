@@ -26,7 +26,7 @@ class _GameScreenState extends State<GameScreen> {
   int contador = 0;
   bool isDay = true;
   String gameState = "Lobos Turno";
-  String nextStatePhase = '';
+  String nextStatePhase = ''; 
   List<Phase> dayPhases = [];
   List<Phase> nightPhases = [];
   int currentPhaseIndex = 0;
@@ -57,6 +57,11 @@ class _GameScreenState extends State<GameScreen> {
       nextStatePhase = dayPhases[1].name;
     });
 
+    // Turno para Cupido
+    if (isDay && dayPhases[currentPhaseIndex].name == 'Cupido') {
+      _turnCupido();
+    }
+
   }
 
   void _goToNextPhase() {
@@ -83,7 +88,7 @@ class _GameScreenState extends State<GameScreen> {
 
        // Actualizar el estado del juego (fase actual)
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
-      
+
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
         Player? selectedPlayer; 
         try{
@@ -134,6 +139,14 @@ class _GameScreenState extends State<GameScreen> {
       if (isDay && dayPhases[currentPhaseIndex].name == 'Nominacion') {
         _showTemporizador();
       }
+
+      // Turno para Protector
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Protector') {
+        //for (var i = 0; i < 2; i++){
+          _turnProtector();
+        //}
+      }
+
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Lobos') {
         _turnLobos();
       }
@@ -390,7 +403,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .where((player) => player.state?.toLowerCase() != 'Muerto' && player.protegidoActivo != true) // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -513,7 +526,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'Muerto') // Excluir jugadores Muertos
+                    .where((player) => (player.state?.toLowerCase() != 'Muerto' && player.protegidoActivo != true)) // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -554,7 +567,7 @@ class _GameScreenState extends State<GameScreen> {
       },
     );
   }
-  Player? _getRolePlayer(String roleName){
+    Player? _getRolePlayer(String roleName){
     Player? player ;
         try{
         // Buscar el primer jugador con estado 'Seleccionado'
@@ -637,6 +650,168 @@ class _GameScreenState extends State<GameScreen> {
                   }
                 }
                 String action = "Curanderos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name}";
+                recordActions.add(action);
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //Modal Protector
+  void _turnProtector() {
+
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Protector"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione un jugador"),
+                  value: selectedPlayer,
+                  items: widget.selectedPlayers
+                    .where((player) => player.protegido != 2) // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                if (selectedPlayer?.protegido == null){
+                  setState(() {
+                    selectedPlayer?.protegidoActivo = true;
+                    selectedPlayer?.protegido += 1;
+                    Navigator.of(context).pop();
+                  });
+                } else{
+                  if (selectedPlayer!.protegido < 2){
+                    setState(() {
+                      selectedPlayer?.protegidoActivo = true;
+                      curanderoTimesBeenSaved++;
+                      selectedPlayer!.protegido += 1;
+                      Navigator.of(context).pop();
+                    });
+                  }
+                  else {
+                    setState((){
+                      Navigator.of(context).pop();
+                    });
+                  }
+                }
+                String action = "Protector selecciono a ${selectedPlayer?.role} - ${selectedPlayer?.name}";
+                recordActions.add(action);
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //Modal Cupido
+  void _turnCupido() {
+
+    Player? selectedPlayer1; // Jugador seleccionado actualmente
+    Player? selectedPlayer2; // Jugador seleccionado actualmente
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Cupido"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Dropdown para seleccionar jugador
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione primer jugador"),
+                  value: selectedPlayer1,
+                  items: widget.selectedPlayers
+                    .where((player) => player.protegido != 2) // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer1 = newValue;
+                    });
+                  },
+                ),
+                DropdownButton<Player>(
+                  hint: const Text("Seleccione segundo jugador"),
+                  value: selectedPlayer2,
+                  items: widget.selectedPlayers
+                    .where((player) => player.protegido != 2) // Excluir jugadores Muertos
+                    .map((player) {
+                    return DropdownMenuItem<Player>(
+                      value: player,
+                      child: Text("${player.name} ${player.lastName}"),
+                    );
+                  }).toList(),
+                  onChanged: (Player? newValue) {
+                    setState(() {
+                      selectedPlayer2 = newValue;
+                    });
+                  },
+                ),
+              ],
+            );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  selectedPlayer1?.flechado = selectedPlayer2?.phone;
+                  selectedPlayer2?.flechado = selectedPlayer1?.phone;
+                  Navigator.of(context).pop();
+                });
+                String action = "Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}";
                 recordActions.add(action);
               },
               child: const Text("Aceptar"),

@@ -7,6 +7,9 @@ class Player{
   String? secondaryRol;
   String? state;
   int curado = 0;
+  int protegido = 0;
+  bool? protegidoActivo;
+  String? flechado;
   String? numberSeat;
 
   Player({
@@ -18,7 +21,10 @@ class Player{
     this.state,
     this.secondaryRol,
     this.curado = 0,
-    this.numberSeat
+    this.protegido = 0,
+    this.protegidoActivo,
+    this.numberSeat,
+    this.flechado
   });
 
   //Convertir un mapa JSON en un objeto Player
@@ -32,7 +38,10 @@ class Player{
       secondaryRol: json['secondaryRol'] as String?,
       state: json['state'],
       curado: json['curado'],
-      numberSeat: json['numberSeat'] as String
+      protegido: json['protegido'],
+      numberSeat: json['numberSeat'] as String,
+      flechado: json['flechado'] as String,
+      protegidoActivo: json['protegidoActivo']
     );
   }
 }
