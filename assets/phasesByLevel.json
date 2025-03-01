@@ -6,7 +6,7 @@
             {"name": "Nominacion"}
         ],
         "noche":[
-            {"name": "Lobos"},
+            {"name": "Lobo"},
             {"name": "Curandero"},
             {"name": "Vidente"},
             {"name": "Bruja"}
@@ -20,7 +20,7 @@
         ],
         "noche":[
             {"name": "Protector"},
-            {"name": "Lobos"},
+            {"name": "Lobo"},
             {"name": "Curandero"},
             {"name": "Vidente"},
             {"name": "Bruja"}
@@ -37,7 +37,7 @@
         "noche":[
             {"name": "Protector"},
             {"name": "Niña"},
-            {"name": "Lobos"},
+            {"name": "Lobo"},
             {"name": "Curandero"},
             {"name": "Alcalde"},
             {"name": "Vidente"},
@@ -56,7 +56,7 @@
         "noche":[
             {"name": "Protector"},
             {"name": "Niña"},
-            {"name": "Lobos"},
+            {"name": "Lobo"},
             {"name": "Curandero"},
             {"name": "Alcalde"},
             {"name": "Vidente"},

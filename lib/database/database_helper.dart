@@ -28,20 +28,35 @@ class DatabaseHelper{
           name TEXT, 
           lastName TEXT,
           phone TEXT,
-          numberSeat TEXT
+          numberSeat TEXT,
+          UNIQUE(name, lastname, phone)
         )''');
   }
 
-  Future<void> insertUser(Database db, User user) async {
+  Future<bool> insertUser(Database db, User user) async {
     try{
-      await db.insert(
+      // Verificar si el usuario ya existe en la base de datos
+      List<Map<String, dynamic>> existingUser = await db.query(
         'users',
-        {'name': user.name, 'lastName': user.lastName, 'phone': user.phone, 'numberSeat': user.numberSeat},
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        where: 'name = ? AND lastName = ? AND phone = ?',
+        whereArgs: [user.name, user.lastName, user.phone],
       );
+      // Si no existe, insertar el nuevo usuario
+      if (existingUser.isEmpty) {
+        await db.insert(
+          'users',
+          {'name': user.name, 'lastName': user.lastName, 'phone': user.phone, 'numberSeat': user.numberSeat},
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+        return true;
+      } else {
+        return false;
+        print("El usuario con ese nombre, apellido y teléfono ya existe.");
+      }
     }
     catch(e){
       print("Error inserting user : $e");
+      return false;
     }
   }
 

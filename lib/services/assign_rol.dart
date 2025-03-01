@@ -1,8 +1,11 @@
 import 'dart:convert'; //Libreria de dart que ofrece funciones para codificar o decodificar datos como JSON
 import 'package:flutter/services.dart' show rootBundle; //Importa librería de Flutter que permite acceder a recursos del proyecto, como archivos locales. Aquí se usa rootBundle para cargar archivos desde los assets (carpetas dentro del proyecto Flutter, como assets/).
+import 'package:game_wolf/domain/phase.dart';
+import 'package:game_wolf/domain/phases_by_level.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/domain/role_assignment.dart';
-import 'package:game_wolf/domain/number_player_configuration.dart';  // Asegúrate de importar la clase Wolves Assign
+import 'package:game_wolf/domain/number_player_configuration.dart';
+import 'package:game_wolf/services/phases_assign.dart';  // Asegúrate de importar la clase Wolves Assign
 
 //Metodo para crear una instancia de Wolve Assign desde un Map
 Future <List<NumberPlayersConfiguration>> loadNumberPlayerConfig() async {
@@ -41,6 +44,7 @@ Future<List<RoleAssignment>> loadRolesFromJson() async{
   List<dynamic> jsonResponse = jsonDecode(jsonString);
   return jsonResponse.map((data) => RoleAssignment.fromJson(data)).toList();
 }
+
 
 // Ejemplo de cómo usarlo
 Future<void> assignRolesToPlayers(List<Player> players, String level, int numLobos, int numProtectores, int numCazadores) async {
@@ -89,5 +93,29 @@ Future<void> assignRolesToPlayers(List<Player> players, String level, int numLob
   // Asignar los roles a los jugadores
   for (int i = 0; i < players.length; i++) {
     players[i].role = roles[i];
+  }
+  // Cargar fases para el nivel seleccionado
+  List<PhasesByLevel> phases = await loadPhases();
+  final levelPhases = phases.firstWhere((phase) => phase.level == level);
+  List<Phase> nightPhases = levelPhases.noche.cast<Phase>();
+
+  // Crear un mapa de roles a sus posiciones en las fases nocturnas
+  Map<String, int> rolePriority = {};
+
+  // Suponemos que la lista de phases en 'nightPhases' tiene un nombre que corresponde al rol
+  for (int i = 0; i < nightPhases.length; i++) {
+    rolePriority[nightPhases[i].name] = i;  // Asocia el nombre de la fase con su posición
+  }
+
+  // Ordenar a los jugadores según la prioridad de su rol en las fases nocturnas
+  players.sort((a, b) {
+    int priorityA = rolePriority[a.role] ?? 999; // Si el rol no está en el mapa, asignamos baja prioridad
+    int priorityB = rolePriority[b.role] ?? 999;
+    return priorityA.compareTo(priorityB); // Compara según la prioridad
+  });
+
+  // Mostrar los jugadores ordenados
+  for (var player in players) {
+    print('Player: ${player.name}, Role: ${player.role}');
   }
 }

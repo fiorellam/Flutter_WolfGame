@@ -56,7 +56,7 @@ void _showMinimumPlayersDialog() {
     builder: (context) {
       return AlertDialog(
         title: const Text("Jugadores insuficientes"),
-        content: const Text("Debes seleccionar al menos 7 jugadores para iniciar la partida."),
+        content: const Text("Debes seleccionar al menos 7 jugadores para iniciar la partida. en el nivel principiante"),
         actions: [
           TextButton(
             onPressed: () {
@@ -122,7 +122,7 @@ void _showMinimumPlayersDialog() {
                     ) {
                   // setState(()  {
                     final newUser = User(
-                      id: DateTime.now().millisecondsSinceEpoch,
+                      id: 0,
                       name: nameController.text,
                       lastName: lastNameController.text,
                       phone: phoneController.text,
@@ -130,17 +130,26 @@ void _showMinimumPlayersDialog() {
                     );
                     // _players.add(newUser);
                     final db = await _databaseHelper.getDatabase();
-                    await _databaseHelper.insertUser(db, newUser);
+                    bool userAdded = await _databaseHelper.insertUser(db, newUser);
 
+                    if(userAdded){
+                      //si el usuario fue insertado correctamente
                     //RECARGAR LA LISTA DE JUGADORES DESDE LA BASE DE DATOS
-                    await _loadPlayers();
-                  setState((){});
+                      await _loadPlayers();
+                      setState((){});
+                      Navigator.of(context).pop(); // Cerrar el modal
+                    } else {
+                      // Si el usuario ya existe, mostrar un mensaje
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Este usuario ya existe.')),
+                      );
+                    }
+
                     // Actualiza _filteredPlayers dinámicamente solo si contiene filtros
                   if (_filteredPlayers.length != _players.length) {
                     _filteredPlayers = List.from(_players);
                   }
                   // });
-                  Navigator.of(context).pop(); // Cerrar el modal
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Por favor, completa todos los campos.')),

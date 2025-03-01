@@ -1247,7 +1247,8 @@ class _GameScreenState extends State<GameScreen> {
                      child: IconButton(
                       icon: const Icon(Icons.message, color: Colors.white),
                       onPressed: () {
-                        launch('sms:${player.phone}?body=${player.role}');
+                        // launch('sms:${player.phone}?body=${player.role}');
+                        openWhatsApp(phone: '${player.phone}', text: '${player.role}');
                       },
                       //onPressed: () => _editItem(index, player),
                     ),
@@ -1259,6 +1260,21 @@ class _GameScreenState extends State<GameScreen> {
         },
       ),
     );
+  }
+
+  Future <void> openWhatsApp({
+    required String phone,
+    String? text,
+    LaunchMode mode = LaunchMode.externalApplication,
+  }) async {
+    final String textAndroid = text != null ? Uri.encodeFull('&text=$text') : '';
+    final String urlAndroid = 'https://wa.me/send?phone=$phone?text=$textAndroid';
+    final String effectiveURL = urlAndroid;
+    if(await canLaunchUrl(Uri.parse(effectiveURL))) {
+      await launchUrl(Uri.parse(effectiveURL), mode: mode);
+    } else {
+      throw Exception('openWhatsApp could not launching url: $effectiveURL');
+    }
   }
 
   /*void _sendSms(String text, String phone) async{
