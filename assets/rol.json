@@ -43,7 +43,9 @@
             {"name": "Cazador"},
             {"name": "Alcalde"},
             {"name": "Lobo solitario"},
-            {"name": "Leproso"}
+            {"name": "Leproso"},
+            {"name": "Cupido"},
+            {"name": "Protector"}
         ]
     }
 ]

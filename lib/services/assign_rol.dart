@@ -111,14 +111,14 @@ Future<void> assignRolesToPlayers(List<Player> players, String level, int numLob
   // Cargar fases para el nivel seleccionado
   List<PhasesByLevel> phases = await loadPhases();
   final levelPhases = phases.firstWhere((phase) => phase.level == level);
-  List<Phase> nightPhases = levelPhases.noche.cast<Phase>();
+  List<Phase> jerarquia = levelPhases.jerarquia.cast<Phase>();
 
   // Crear un mapa de roles a sus posiciones en las fases nocturnas
   Map<String, int> rolePriority = {};
 
   // Suponemos que la lista de phases en 'nightPhases' tiene un nombre que corresponde al rol
-  for (int i = 0; i < nightPhases.length; i++) {
-    rolePriority[nightPhases[i].name] = i;  // Asocia el nombre de la fase con su posición
+  for (int i = 0; i < jerarquia.length; i++) {
+    rolePriority[jerarquia[i].name] = i;  // Asocia el nombre de la fase con su posición
   }
 
   // Ordenar a los jugadores según la prioridad de su rol en las fases nocturnas

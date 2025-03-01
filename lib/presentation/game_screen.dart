@@ -1115,7 +1115,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('JUEGO LOBO - Nivel: ${widget.level} Daycounter: $dayCounter Night: $nightCounter'),
+        title: Text('JUEGO LOBO - Nivel: ${widget.level} Daycounter: $dayCounter Night: $nightCounter #Jugadores: ${widget.selectedPlayers.length}'),
       ),
       body: Container(
         margin: const EdgeInsets.all(16.0), //16 px en todos los lados
@@ -1223,16 +1223,17 @@ class _GameScreenState extends State<GameScreen> {
                 children: [
                   Expanded(
                       child: Text(
-                          '${index + 1}',
+                          // '${index + 1}',
+                          player.numberSeat ?? '',
                           style: TextStyle( fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           '${player.name} ${player.lastName}',
                           style: TextStyle(fontSize: 20.0,))),
-                  Expanded(
-                      child: Text(
-                          player.numberSeat ?? '',
-                          style: TextStyle(fontSize: 20.0,))),
+                  // Expanded(
+                  //     child: Text(
+                  //         player.numberSeat ?? '',
+                  //         style: TextStyle(fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           player.role,

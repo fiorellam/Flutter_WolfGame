@@ -34,8 +34,19 @@ class _HomeScreenState extends State<HomeScreen>{
   
   //Navegar a nueva pantalla
   void _startGameScreen() async{
-    if(_selectedPlayers.length < 7){
-      _showMinimumPlayersDialog();
+    if(_selectedPlayers.length < 7 && _selectedValue == levelsList.first){
+      _showMinimumPlayersDialog("Debes seleccionar al menos 7 jugadores para iniciar la partida en el nivel ${levelsList.first}");
+      return;
+    } else if (_selectedPlayers.length < 10 && _selectedValue == levelsList[1]){
+      _showMinimumPlayersDialog("Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      return;
+    }
+    else if (_selectedPlayers.length < 13  && _selectedValue == levelsList[2]){
+      _showMinimumPlayersDialog("Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      return;
+    }
+    else if (_selectedPlayers.length < 16  && _selectedValue == levelsList[3]){
+      _showMinimumPlayersDialog("Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
     }
     //Llamar funcion que convierte lista de User a Player
@@ -50,13 +61,13 @@ class _HomeScreenState extends State<HomeScreen>{
   }
 
   // Método para mostrar un AlertDialog cuando hay menos de 7 jugadores
-void _showMinimumPlayersDialog() {
+void _showMinimumPlayersDialog(String message) {
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
         title: const Text("Jugadores insuficientes"),
-        content: const Text("Debes seleccionar al menos 7 jugadores para iniciar la partida. en el nivel principiante"),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () {

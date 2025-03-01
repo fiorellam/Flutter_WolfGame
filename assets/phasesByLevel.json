@@ -10,6 +10,13 @@
             {"name": "Curandero"},
             {"name": "Vidente"},
             {"name": "Bruja"}
+        ],
+        "jerarquia": [
+            {"name": "Lobo"},
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"}
         ]
     },
     {
@@ -24,6 +31,15 @@
             {"name": "Curandero"},
             {"name": "Vidente"},
             {"name": "Bruja"}
+        ],
+        "jerarquia": [
+            {"name": "Cupido"},
+            {"name": "Protector"},
+            {"name": "Lobo"},
+            {"name": "Curandero"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Granjero"}
         ]
     },
     {
@@ -43,6 +59,18 @@
             {"name": "Vidente"},
             {"name": "Bruja"},
             {"name": "Cazador"}
+        ],
+        "jerarquia": [
+            {"name": "Cupido"},
+            {"name": "Protector"},
+            {"name": "Niña"},
+            {"name": "Lobo"},
+            {"name": "Curandero"},
+            {"name": "Alcalde"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Cazador"},
+            {"name": "Granjeros"}
         ]
     },
     {
@@ -67,6 +95,20 @@
             {"name": "Niña"},
             {"name": "Lobo solitario"},
             {"name": "Leproso"}
+        ],
+        "jerarquia": [
+            {"name": "Cupido"},
+            {"name": "Protector"},
+            {"name": "Niña"},
+            {"name": "Lobo"},
+            {"name": "Curandero"},
+            {"name": "Alcalde"},
+            {"name": "Vidente"},
+            {"name": "Bruja"},
+            {"name": "Ladrón"},
+            {"name": "Cazador"},
+            {"name": "Esbirro"},
+            {"name": "Granjero"}
         ]
     }
 ]
