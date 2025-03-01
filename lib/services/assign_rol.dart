@@ -74,6 +74,20 @@ Future<void> assignRolesToPlayers(List<Player> players, String level, int numLob
   int numberOfWolves = numLobos != 0 ? numLobos : await getNumberOfWolves(numberOfPlayers);
 
   List<String> roles = availableRoles;
+  if (numProtectores > 1) {
+    int contador = 0;
+    for(var i = 1; i < numProtectores; i++){
+      contador = i;
+    }
+    roles.addAll(List.filled(contador, "Protector"));
+  }
+  if (numCazadores > 1) {
+    int contador = 0;
+    for(var i = 1; i < numCazadores; i++){
+      contador = i;
+    }
+    roles.addAll(List.filled(contador, "Cazador"));
+  }
   roles.addAll(List.filled(numberOfWolves, "Lobo"));
   print('Available $roles');
 

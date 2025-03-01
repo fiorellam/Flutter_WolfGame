@@ -36,6 +36,9 @@ class _GameScreenState extends State<GameScreen> {
   int dayCounter = 1;
   int nightCounter = 0;
   int curanderoTimesBeenSaved = 0;
+  //declarar una sola vez
+  final sizeProtector = 0;
+  final sizeCazador = 0;
   //String _selectedValue; //Valor inicial
 
   @override
@@ -176,9 +179,13 @@ class _GameScreenState extends State<GameScreen> {
       // Turno para Protector
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Protector') {
         //for (var i = 0; i < 2; i++){
-        Player? selectedPlayer; 
+        Player? selectedPlayer;
+        //para saber la longitud
+        final sizeProtector = widget.selectedPlayers
+          .where((player) => player.state == 'Vivo' && player.role == 'Protector')
+          .length;
         try{
-        // Buscar el primer jugador con estado 'Seleccionado'
+          // Buscar el primer jugador con estado 'Seleccionado'
           selectedPlayer = widget.selectedPlayers.firstWhere(
           (player) => player.protegidoActivo == true,);
           setState((){
@@ -187,7 +194,8 @@ class _GameScreenState extends State<GameScreen> {
         } catch (e) {
           selectedPlayer = null;
         }
-        _turnProtector();
+        print('Longitud de Protector ${sizeProtector}');
+        _turnProtector(sizeProtector);
         //}
       }
 
@@ -727,7 +735,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   //Modal Protector
-  void _turnProtector() {
+  void _turnProtector(int numSize) {
 
     Player? selectedPlayer; // Jugador seleccionado actualmente
 
@@ -797,6 +805,10 @@ class _GameScreenState extends State<GameScreen> {
                 }
                 String action = "Protector selecciono a ${selectedPlayer?.role} - ${selectedPlayer?.name}";
                 recordActions.add(action);
+                print(numSize);
+                if(numSize > 1){
+                  _turnProtector(numSize - 1);
+                }
               },
               child: const Text("Aceptar"),
             ),
@@ -1247,8 +1259,8 @@ class _GameScreenState extends State<GameScreen> {
                      child: IconButton(
                       icon: const Icon(Icons.message, color: Colors.white),
                       onPressed: () {
-                        // launch('sms:${player.phone}?body=${player.role}');
-                        openWhatsApp(phone: '${player.phone}', text: '${player.role}');
+                        launch('sms:${player.phone}?body=${player.role}');
+                        //openWhatsApp(phone: '${player.phone}', text: '${player.role}');
                       },
                       //onPressed: () => _editItem(index, player),
                     ),
