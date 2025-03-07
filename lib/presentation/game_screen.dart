@@ -199,7 +199,7 @@ class _GameScreenState extends State<GameScreen> {
         //}
       }
 
-      if (!isDay && nightPhases[currentPhaseIndex].name == 'Lobos') {
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Lobo') {
         _turnLobos();
       }
 

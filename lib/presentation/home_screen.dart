@@ -431,9 +431,7 @@ void _showMinimumPlayersDialog(String message) {
               children: [
                 Text('Jugadores seleccionados ${_selectedPlayers.length}', 
                   style: TextStyle(
-                    fontSize: 18.0, 
-                    
-                    // Cambia este valor al tamaño que desees
+                    fontSize: 18.0, // Cambia este valor al tamaño que desees
                   ),
                 ),
                 DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),

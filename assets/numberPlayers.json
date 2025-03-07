@@ -2,10 +2,10 @@
     {
         "min_players": 7,
         "wolves": 3,
-        "max_players":7
+        "max_players":8
     },
     {
-        "min_players": 8,
+        "min_players": 9,
         "wolves": 4,
         "max_players": 11
     },
