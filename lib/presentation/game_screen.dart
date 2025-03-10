@@ -261,7 +261,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
                 TextField(
                   controller: roleController,
-                  decoration: const InputDecoration(labelText: 'No. Asiento'),
+                  decoration: const InputDecoration(labelText: 'Rol'),
                 ),
               ],
             ),
@@ -604,7 +604,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -680,7 +680,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -760,7 +760,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -845,7 +845,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -862,7 +862,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -991,7 +991,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
@@ -1051,6 +1051,9 @@ class _GameScreenState extends State<GameScreen> {
                     }
                     else {
                       setState((){
+                        selectedPlayer?.state = 'Muerto';
+                        String action = 'Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                        recordActions.add(action);
                         Navigator.of(context).pop();
                       });
                     }
