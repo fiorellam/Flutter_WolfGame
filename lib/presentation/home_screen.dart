@@ -330,7 +330,7 @@ void _showMinimumPlayersDialog(String message) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Administrator de Partida'),
+          title: const Text('Administrador de Partida'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

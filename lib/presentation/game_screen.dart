@@ -32,7 +32,7 @@ class _GameScreenState extends State<GameScreen> {
   int currentPhaseIndex = 0;
   bool hasSheriffBeenSelected = false; //Controla si el sheriff ha sido seleccionado
   bool hasCupidoBeenSelected = false; //Controla si cupido ya paso su turno
-  List<String> recordActions = ['DIA 1'];
+  List<String> recordActions = ['DIA 1 ☀️'];
   int dayCounter = 1;
   int nightCounter = 0;
   int curanderoTimesBeenSaved = 0;
@@ -82,11 +82,11 @@ class _GameScreenState extends State<GameScreen> {
         if (isDay == false) {
             contador++;
             nightCounter++;
-            recordActions.add('NOCHE $nightCounter');
+            recordActions.add('NOCHE $nightCounter 🌙');
         } 
         if(isDay){
           dayCounter++;
-          recordActions.add('DIA $dayCounter');
+          recordActions.add('DIA $dayCounter ☀️');
         }
       }
 
@@ -153,9 +153,13 @@ class _GameScreenState extends State<GameScreen> {
         .length;
       if (sizeLobo == sizeNoLobos || sizeLobo > sizeNoLobos){
         _whoWonDialog(text: "Ganaron Lobos!!");
+        String action = 'GANAN LOBOS 🐺';
+        recordActions.add(action);
       }else{
         if (sizeLobo == 0){
           _whoWonDialog(text: "Ganaron Aldeanos!!");
+          String action = 'GANAN ALDEANOS';
+          recordActions.add(action);
         }
       }
 
@@ -248,6 +252,10 @@ class _GameScreenState extends State<GameScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
+                  controller: roleController,
+                  decoration: const InputDecoration(labelText: 'Rol Principal'),
+                ),
+                TextField(
                   controller: secondaryRolController,
                   decoration: const InputDecoration(labelText: 'Rol Secundario'),
                 ),
@@ -258,10 +266,6 @@ class _GameScreenState extends State<GameScreen> {
                 TextField(
                   controller: numberSeatController,
                   decoration: const InputDecoration(labelText: 'No. Asiento'),
-                ),
-                TextField(
-                  controller: roleController,
-                  decoration: const InputDecoration(labelText: 'Rol'),
                 ),
               ],
             ),
@@ -488,19 +492,26 @@ class _GameScreenState extends State<GameScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (selectedPlayer?.flechado != null){
+                if (selectedPlayer?.flechado != null && selectedPlayer2 != null){
+                  if(selectedPlayer2 == null){ //Si no eligen a nadie en la asamblea
+                    setState((){
+                      String action = 'En la asamblea no se eligió a nadie';
+                      recordActions.add(action);
+                      Navigator.of(context).pop();
+                    });
+                  }
                   selectedPlayer2 = widget.selectedPlayers.firstWhere(
                   (player) => selectedPlayer?.phone == player.flechado);
                   
                   if ((selectedPlayer2?.protegidoActivo == true)){
                     setState((){
-                      String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero esta protegido';
+                      String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero esta protegido';
                       recordActions.add(action);
                       Navigator.of(context).pop();
                     });
                   } else {
                     setState((){
-                      String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado';
+                      String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado';
                       recordActions.add(action);
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
@@ -509,7 +520,7 @@ class _GameScreenState extends State<GameScreen> {
                   }
                 } else {
                   setState((){
-                    String action = 'En la nominacion se eligio para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                    String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
                     recordActions.add(action);
                     selectedPlayer?.state = 'Muerto';
                     Navigator.of(context).pop();
@@ -548,7 +559,7 @@ class _GameScreenState extends State<GameScreen> {
 
         // if (playerToUpdate) {
           playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
-          String action = 'En la pirinola murió ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
+          String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
           recordActions.add(action);
         // }
       });
@@ -1036,7 +1047,7 @@ class _GameScreenState extends State<GameScreen> {
                     setState(() {
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
-                      String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mato a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado';
+                      String action = 'Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mato a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado';
                       recordActions.add(action);
                       Navigator.of(context).pop();
                     });
@@ -1044,15 +1055,14 @@ class _GameScreenState extends State<GameScreen> {
                     if (selectedPlayer?.role == 'Lobo'){
                       setState(() {
                         selectedPlayer?.state = 'Muerto';
-                        String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                        String action = 'Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
                         recordActions.add(action);
                         Navigator.of(context).pop();
                       });
                     }
                     else {
                       setState((){
-                        selectedPlayer?.state = 'Muerto';
-                        String action = 'Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                        String action = 'Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo';
                         recordActions.add(action);
                         Navigator.of(context).pop();
                       });
@@ -1186,14 +1196,17 @@ class _GameScreenState extends State<GameScreen> {
             
         // Aquí usamos un ListView para mostrar las acciones
             Container(
-              height: 100,
+              height: 130,
               child: ListView.builder(
                 itemCount: recordActions.length,
                 itemBuilder: (context, index) {
                   // return ListTile(
                   //   title: Text(recordActions[index]), // Mostrar cada acción en la lista
                   // );
-                  return  Text(recordActions[index]); // Mostrar cada acción en la lista
+                  if(recordActions[index].contains('NOCHE') || recordActions[index].contains('DIA')){
+                    return Text(recordActions[index], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0,)); // Mostrar cada acción en la lista
+                  }
+                  return  Text(recordActions[index], style: TextStyle( fontSize: 17.0,)); // Mostrar cada acción en la lista
                   
                 },
               ),
