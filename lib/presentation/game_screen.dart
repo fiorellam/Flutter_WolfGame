@@ -23,6 +23,8 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  int convertToWolf = 0;
+  int potions = 0;
   int contador = 0;
   bool isDay = true;
   String gameState = "Lobos Turno";
@@ -53,6 +55,8 @@ class _GameScreenState extends State<GameScreen> {
 
     //Filtrar fases por nivel seleccionado
     final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
+    convertToWolf = (widget.selectedPlayers.length <= 8) ? 1 : (widget.selectedPlayers.length <= 15) ? 2 : 3;
+    potions = (widget.selectedPlayers.length <= 9) ? 1 : (widget.selectedPlayers.length <= 20) ? 2 : 3;
 
     setState(() {
       dayPhases = levelPhases.dia.cast<Phase>();
@@ -519,12 +523,20 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   }
                 } else {
-                  setState((){
-                    String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
-                    recordActions.add(action);
-                    selectedPlayer?.state = 'Muerto';
-                    Navigator.of(context).pop();
-                  });
+                  if (selectedPlayer == null){
+                    setState((){
+                      String action = 'No se escogió a nadie para matar';
+                      recordActions.add(action);
+                      Navigator.of(context).pop();
+                    });
+                  }else {
+                    setState((){
+                      String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                      recordActions.add(action);
+                      selectedPlayer?.state = 'Muerto';
+                      Navigator.of(context).pop();
+                    });
+                  }
                 }
               },
               child: const Text("Aceptar"),
@@ -687,7 +699,7 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: widget.selectedPlayers
-                    .where((player) => player.curado != 2) // Excluir jugadores Muertos
+                    .where((player) => player.curado != 2 && player.state != 'Muerto') // Excluir jugadores Muertos
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -1055,7 +1067,7 @@ class _GameScreenState extends State<GameScreen> {
                     if (selectedPlayer?.role == 'Lobo'){
                       setState(() {
                         selectedPlayer?.state = 'Muerto';
-                        String action = 'Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
+                        String action = 'Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y lo mato';
                         recordActions.add(action);
                         Navigator.of(context).pop();
                       });
@@ -1163,7 +1175,7 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                     padding: const EdgeInsets.all(10),
                   ),
-                  child: Text('Poción 1'),
+                  child: Text('Poción Sheriff'),
                   
                 ),
                 FilledButton(
@@ -1175,7 +1187,19 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                     padding: const EdgeInsets.all(10),
                   ),
-                  child: Text('Poción 2'),
+                  child: Text('Poción Pueblo'),
+                  
+                ),
+                FilledButton(
+                  onPressed: (){},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0)
+                    ),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                  child: Text('Poción Ayudante'),
                   
                 ),
                 //Boton siguiente fase
