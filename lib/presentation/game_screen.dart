@@ -926,7 +926,7 @@ class _GameScreenState extends State<GameScreen> {
                     .map((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
-                      child: Text("${player.name} ${player.lastName}"),
+                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
                     );
                   }).toList(),
                   onChanged: (Player? newValue) {
