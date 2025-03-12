@@ -553,6 +553,7 @@ class _GameScreenState extends State<GameScreen> {
   void _randomPlayerToKill(){
     //Filtrar jugadores vivos
     List<Player> playersAlive = _getPlayersStillAlive();
+    Player? selectedPlayer2; 
     if(playersAlive.isNotEmpty){
       Random random = Random();
       int indexAleatorio = random.nextInt(playersAlive.length);
@@ -560,25 +561,40 @@ class _GameScreenState extends State<GameScreen> {
       //TODO: Falta que solo se puedan seleccionar jugadores que sigan vivos
       //Obtener player al azar
       Player playerSelectedToKill = playersAlive[indexAleatorio];
-
-      //Cambiar su estado a muerto
-      // Cambiar su estado a "muerto"
-      setState(() {
-        // Encontrar el jugador correspondiente en la lista original
-        Player playerToUpdate = widget.selectedPlayers.firstWhere(
-          (player) => player == playerSelectedToKill,
-          //  Maneja el caso si no se encuentra el jugador
-        );
-
-        if (playerToUpdate.protegidoActivo == true) {
-          String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido por lo cual no se pudo matar';
-          recordActions.add(action);
+      Player playerToUpdate = widget.selectedPlayers.firstWhere(
+        (player) => player == playerSelectedToKill,
+        //  Maneja el caso si no se encuentra el jugador
+      );
+      if (playerSelectedToKill.flechado != null && playerSelectedToKill.protegidoActivo != true) {
+        selectedPlayer2 = widget.selectedPlayers.firstWhere(
+        (player) => playerSelectedToKill.phone == playerToUpdate.flechado);
+        if (selectedPlayer2.protegidoActivo == true){
+          setState(() {
+            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} pero esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}';
+            recordActions.add(action);
+          });
         } else {
-          playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
-          String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
-          recordActions.add(action);
+          setState(() {
+            playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
+            selectedPlayer2?.state = "Muerto"; // Cambiar el estado a "muerto"
+            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name} el cual estaba flechado';
+            recordActions.add(action);
+          });
         }
-      });
+      } else{
+        if (playerToUpdate.protegidoActivo == true) {
+          setState((){
+            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido por lo cual no se pudo matar';
+            recordActions.add(action);
+          });
+        } else {
+          setState(() {
+            playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
+            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
+            recordActions.add(action);
+          });
+        }
+      }
     }
     else{
       showDialog(
