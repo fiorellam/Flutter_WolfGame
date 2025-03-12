@@ -131,6 +131,7 @@ class _GameScreenState extends State<GameScreen> {
           // Asignar el estado 'Muerto' si se encontró un jugador
           if (selectedPlayer != null) {
             if(selectedPlayer?.flechado == null) {
+              //if (selectedPlayer.rol != 'Lobo')
               setState(() {
                 selectedPlayer?.state = 'Muerto';
                 String action = 'Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
@@ -569,11 +570,14 @@ class _GameScreenState extends State<GameScreen> {
           //  Maneja el caso si no se encuentra el jugador
         );
 
-        // if (playerToUpdate) {
+        if (playerToUpdate.protegidoActivo == true) {
+          String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido por lo cual no se pudo matar';
+          recordActions.add(action);
+        } else {
           playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
           String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
           recordActions.add(action);
-        // }
+        }
       });
     }
     else{
@@ -1050,7 +1054,7 @@ class _GameScreenState extends State<GameScreen> {
                 //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
                 if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
                   setState((){
-                    String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero no pudo matarlo porque esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}';
+                    String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero no lo mato porque esta protegido';
                     recordActions.add(action);
                     Navigator.of(context).pop();
                   });
