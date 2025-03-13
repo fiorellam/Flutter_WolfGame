@@ -25,6 +25,10 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   int convertToWolf = 0;
   int potions = 0;
+  bool potionSheriff = true;
+  bool potionAyudante = true;
+  bool potionPueblo = true;
+  int potionUse = 0;
   int contador = 0;
   bool isDay = true;
   String gameState = "Lobos Turno";
@@ -72,6 +76,28 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void _updatePotions(){
+    setState((){
+      Player? selectedPlayer; 
+      selectedPlayer = widget.selectedPlayers.firstWhere(
+      (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto'));
+
+      print(selectedPlayer);
+      if (selectedPlayer.secondaryRol == 'Sheriff'){
+        potionSheriff = false;
+        selectedPlayer.state = 'Vivo';
+        String action = 'El Sheriff ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse';
+        recordActions.add(action);
+      } else {
+        if (selectedPlayer.secondaryRol == 'Ayudante'){
+          potionAyudante = false;
+          selectedPlayer.state = 'Vivo';
+          String action = 'El ayudante ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse';
+          recordActions.add(action);
+        }
+      }    
+    });
+  }
   void _goToNextPhase() {
      setState(() {
       // Obtener las fases actuales (día o noche)
@@ -100,16 +126,24 @@ class _GameScreenState extends State<GameScreen> {
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
         Player? selectedPlayer; 
         Player? selectedPlayer2;
+        Player? existeSheriff;
         try{
         // Buscar el primer jugador con estado 'Seleccionado'
           selectedPlayer = widget.selectedPlayers.firstWhere(
           (player) => player.state == 'Seleccionado',);
-          if (selectedPlayer?.flechado != null){
+          if (selectedPlayer.flechado != null){
             selectedPlayer2 = widget.selectedPlayers.firstWhere(
             (player) => selectedPlayer?.phone == player.flechado);
           }
         } catch (e) {
           selectedPlayer = null;
+        }
+
+        existeSheriff = widget.selectedPlayers.firstWhere(
+        (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Vivo') || (player.secondaryRol == 'Ayudante' && player.state == 'Vivo'),);
+        
+        if (existeSheriff.state == 'Vivo' && selectedPlayer?.state == 'Seleccionado' && (selectedPlayer2?.protegidoActivo == null || selectedPlayer?.protegidoActivo == null) && potionPueblo == true){
+          _turnSheriff();
         }
 
         if(selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true){
@@ -302,53 +336,65 @@ class _GameScreenState extends State<GameScreen> {
   void _turnSheriff() {
 
     Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? selectedPlayer2;
+    
+    selectedPlayer = widget.selectedPlayers.firstWhere(
+    (player) => player.state == 'Seleccionado',);
+
+    try{
+    // Buscar el primer jugador con estado 'Seleccionado'
+      selectedPlayer = widget.selectedPlayers.firstWhere(
+      (player) => player.state == 'Seleccionado',);
+      if (selectedPlayer.flechado != null){
+        selectedPlayer2 = widget.selectedPlayers.firstWhere(
+        (player) => selectedPlayer?.phone == player.flechado);
+      }
+    } catch (e) {
+      selectedPlayer = null;
+    }
 
     showDialog(
       context: context,
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Eleccion Sheriff"),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione un jugador"),
-                  value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer = newValue;
-                    });
-                  },
-                ),
-              ],
-            );
-
-            },
-          ),
+          title: Text('Quieres usar la poción del pueblo para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
+                if(selectedPlayer?.flechado == null) {
+                  //if (selectedPlayer.rol != 'Lobo')
+                  setState(() {
+                    String action = 'No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}';
+                    selectedPlayer?.state = 'Muerto';
+                    recordActions.add(action);
+                    Navigator.of(context).pop();
+                  });
+                } else {
+                  setState(() {
+                    selectedPlayer?.state = 'Muerto';
+                    selectedPlayer2?.state = 'Muerto';
+                    String action = 'No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} y también mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} ${selectedPlayer2?.lastName} porque estaba flechado';
+                    recordActions.add(action);
+                    Navigator.of(context).pop();
+                  });
+                }
+                setState((){
+                  String action = 'No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}';
+                  selectedPlayer?.state = 'Muerto';
+                  recordActions.add(action);
+                  Navigator.of(context).pop();
+                });
               },
               child: const Text("Cancelar"),
             ),
             TextButton(
               onPressed: () {
                 setState((){
-                  selectedPlayer?.secondaryRol = 'Sheriff';
+                  String action = 'Se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}';
+                  selectedPlayer?.state = 'Vivo';
+                  potionPueblo = false;
+                  recordActions.add(action);
                   Navigator.of(context).pop();
                 });
               },
@@ -428,6 +474,7 @@ class _GameScreenState extends State<GameScreen> {
     int remainingSeconds = totalSeconds;
     Timer? timer;
     Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? revisoSheriff; // Jugador seleccionado actualmente
     Player? selectedPlayer2; // Jugador seleccionado actualmente
 
     showDialog(
@@ -497,6 +544,9 @@ class _GameScreenState extends State<GameScreen> {
             ),
             TextButton(
               onPressed: () {
+                /*revisoSheriff = widget.selectedPlayers.firstWhere(
+                  (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Vivo') || (player.secondaryRol == 'Ayudante' && player.state == 'Vivo'),);
+                */
                 if (selectedPlayer?.flechado != null && selectedPlayer2 != null){
                   if(selectedPlayer2 == null){ //Si no eligen a nadie en la asamblea
                     setState((){
@@ -1157,6 +1207,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Player? selectedPlayer;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -1187,21 +1238,20 @@ class _GameScreenState extends State<GameScreen> {
                   ) ,
                 ),
                 FilledButton(
-                  onPressed:(){},
+                  onPressed: _updatePotions,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor: (potions >= 1 && potionSheriff == true) ? Colors.amber : Colors.grey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4.0)
                     ),
                     padding: const EdgeInsets.all(10),
                   ),
                   child: Text('Poción Sheriff'),
-                  
                 ),
                 FilledButton(
                   onPressed: (){},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: (potions >= 2 && potionPueblo == true) ? Colors.blue : Colors.grey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4.0)
                     ),
@@ -1213,7 +1263,7 @@ class _GameScreenState extends State<GameScreen> {
                 FilledButton(
                   onPressed: (){},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: (potions > 2 && potionAyudante == true) ? Colors.deepOrangeAccent : Colors.grey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4.0)
                     ),
