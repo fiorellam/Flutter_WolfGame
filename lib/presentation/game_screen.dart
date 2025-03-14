@@ -1261,7 +1261,7 @@ class _GameScreenState extends State<GameScreen> {
                   
                 ),
                 FilledButton(
-                  onPressed: (){},
+                  onPressed: _updatePotions,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: (potions > 2 && potionAyudante == true) ? Colors.deepOrangeAccent : Colors.grey,
                     shape: RoundedRectangleBorder(
