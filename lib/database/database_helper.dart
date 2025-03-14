@@ -1,9 +1,7 @@
 import 'package:game_wolf/domain/user.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
-import 'dart:io';
 
 class DatabaseHelper{
 

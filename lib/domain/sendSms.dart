@@ -3,7 +3,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class SendSMS extends StatelessWidget {
   final String phoneNumber = "1234567890"; // Número de teléfono
-  final String message = "Hola, este es un mensaje de prueba desde Flutter."; // Mensaje de texto
+  final String message = "Hola, este es un mensaje de prueba desde Flutter.";
+
+  const SendSMS({super.key}); // Mensaje de texto
 
   @override
   Widget build(BuildContext context) {

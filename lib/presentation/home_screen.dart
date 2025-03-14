@@ -131,13 +131,25 @@ void _showMinimumPlayersDialog(String message) {
                     phoneController.text.isNotEmpty 
                     // numberSeatController.text.isNotEmpty
                     ) {
+                      final newSeatNumber = numberSeatController.text.trim();
+
+                      // **VALIDAR SI EL NÚMERO DE ASIENTO YA EXISTE**
+                      bool seatExists = _players.any((player) => player.numberSeat == newSeatNumber);
+
+                      if (seatExists && newSeatNumber != '0' && newSeatNumber != '' && newSeatNumber != ' ' ) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Este número de asiento ya está ocupado.')),
+                        );
+                        return; // Detiene el proceso si el asiento ya está ocupado
+                      }
                   // setState(()  {
                     final newUser = User(
                       id: 0,
                       name: nameController.text,
                       lastName: lastNameController.text,
                       phone: phoneController.text,
-                      numberSeat: numberSeatController.text
+                      // numberSeat: numberSeatController.text
+                      numberSeat: newSeatNumber
                     );
                     // _players.add(newUser);
                     final db = await _databaseHelper.getDatabase();
@@ -199,13 +211,25 @@ void _showMinimumPlayersDialog(String message) {
             TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
             ElevatedButton(
               onPressed: () async {
+                final newSeatNumber = numberSeatController.text.trim();
+
+                // **VALIDAR SI EL NÚMERO DE ASIENTO YA EXISTE**
+                bool seatExists = _players.any((player) => player.numberSeat == newSeatNumber);
+
+                if (seatExists && newSeatNumber != '0' && newSeatNumber != '' && newSeatNumber != ' ' ) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Este número de asiento ya está ocupado.')),
+                  );
+                  return; // Detiene el proceso si el asiento ya está ocupado
+                }
+
                 final db = await _databaseHelper.getDatabase();
                 final updatedUser = User(
                   id: user.id,
                   name: nameController.text,
                   lastName: lastNameController.text,
                   phone: phoneController.text,
-                  numberSeat: numberSeatController.text,
+                  numberSeat: newSeatNumber,
                 );
 
                 await _databaseHelper.updateUser(db, updatedUser);
@@ -496,7 +520,7 @@ void _showMinimumPlayersDialog(String message) {
                 color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
               ),
               title: Text('${player.name} ${player.lastName}      Tel: ${player.phone}      Asiento: ${player.numberSeat}',
-                style: new TextStyle(
+                style: TextStyle(
                   fontSize: 20.0,
                 )),
               // subtitle: Text('Tel: ${player.phone}',

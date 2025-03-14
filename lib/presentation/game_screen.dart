@@ -164,7 +164,7 @@ class _GameScreenState extends State<GameScreen> {
         } else{
           // Asignar el estado 'Muerto' si se encontró un jugador
           if (selectedPlayer != null) {
-            if(selectedPlayer?.flechado == null) {
+            if(selectedPlayer.flechado == null) {
               //if (selectedPlayer.rol != 'Lobo')
               setState(() {
                 selectedPlayer?.state = 'Muerto';
@@ -237,7 +237,7 @@ class _GameScreenState extends State<GameScreen> {
         } catch (e) {
           selectedPlayer = null;
         }
-        print('Longitud de Protector ${sizeProtector}');
+        print('Longitud de Protector $sizeProtector');
         _turnProtector(sizeProtector);
         //}
       }
@@ -1400,7 +1400,75 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  Future<void> sendWhatsAppMessagesToAll(List<Player> players) async {
+    for (var player in players) {
+      final String phone = player.phone;
+      final String message = Uri.encodeFull('Noche del lobo! tu rol es el siguiente: ${player.role}');
+      final String url = 'https://wa.me/$phone?text=$message';
+
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        print('Error al abrir WhatsApp con el número: $phone');
+      }
+      await Future.delayed(Duration(seconds: 2)); // Pequeña pausa entre envíos
+    }
+}
+  Future<void> sendSMSMessagesToAll(List<Player> players) async {
+  for (var player in players) {
+    final String phone = player.phone;
+    final String message = Uri.encodeFull('Noche del lobo! Tu rol es: ${player.role}');
+    final String smsUrl = 'sms:$phone?body=$message';
+
+    if (await canLaunch(smsUrl)) {
+      await launch(smsUrl);
+    } else {
+      print('No se pudo enviar SMS a: $phone');
+    }
+    await Future.delayed(Duration(seconds: 2)); // Pausa entre mensajes
+  }
+}
+
+  // Future<void> sendSMSMessagesToAll2(List<Player> players) async {
+  //   for (var player in players) {
+  //     final String phone = player.phone;
+  //     final String message = 'Noche del lobo! Tu rol es: ${player.role}';
+
+  //     try {
+  //       await sendSMS(
+  //         message: message,
+  //         recipients: [phone],  // Enviar a un solo jugador
+  //         sendDirect: true,      // Envía sin abrir la app de SMS
+  //       );
+  //     } catch (e) {
+  //       print('Error al enviar SMS a $phone: $e');
+  //     }
+
+  //     await Future.delayed(Duration(seconds: 2)); // Pequeña pausa entre mensajes
+  //   }
+  // }
+
   /*void _sendSms(String text, String phone) async{
     await sendSMS(message: "Tu rol es: $text", recipients: phone);
   }*/
+
+  Future<bool> _confirmExit() async{
+      return await showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text("Deseas salir de la partida?"),
+        content: Text('¿Estás seguro que deseas salir? Se perderá la partida y los roles.'),
+        actions: [
+          TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // No salir
+                child: Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true), // Salir
+                child: Text("Salir"),
+              ),
+        ],
+      )
+    );    
+  }
 }
