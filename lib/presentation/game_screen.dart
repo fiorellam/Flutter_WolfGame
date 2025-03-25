@@ -1208,104 +1208,107 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     Player? selectedPlayer;
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text('JUEGO LOBO - Nivel: ${widget.level} Daycounter: $dayCounter Night: $nightCounter #Jugadores: ${widget.selectedPlayers.length}'),
-      ),
-      body: Container(
-        margin: const EdgeInsets.all(16.0), //16 px en todos los lados
-        child: Column(
-          children: [
-            //Cuadros de informacion y botón
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  color: const Color.fromARGB(255, 137, 108, 188),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text('Estado: ${isDay? 'Día' : 'Noche'}'),
-                  ),
-                ),
-                Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  color: const Color.fromARGB(255, 137, 108, 188),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text("Estado: $gameState"),
-                  ) ,
-                ),
-                FilledButton(
-                  onPressed: _updatePotions,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: (potions >= 1 && potionSheriff == true) ? Colors.amber : Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0)
+    return WillPopScope(
+      onWillPop: () => _confirmExit(), // Llamamos a la función
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text('JUEGO LOBO - Nivel: ${widget.level} Daycounter: $dayCounter Night: $nightCounter #Jugadores: ${widget.selectedPlayers.length}'),
+        ),
+        body: Container(
+          margin: const EdgeInsets.all(16.0), //16 px en todos los lados
+          child: Column(
+            children: [
+              //Cuadros de informacion y botón
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    color: const Color.fromARGB(255, 137, 108, 188),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text('Estado: ${isDay? 'Día' : 'Noche'}'),
                     ),
-                    padding: const EdgeInsets.all(10),
                   ),
-                  child: Text('Poción Sheriff'),
-                ),
-                FilledButton(
-                  onPressed: (){},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: (potions >= 2 && potionPueblo == true) ? Colors.blue : Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0)
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    color: const Color.fromARGB(255, 137, 108, 188),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text("Estado: $gameState"),
+                    ) ,
+                  ),
+                  FilledButton(
+                    onPressed: _updatePotions,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: (potions >= 1 && potionSheriff == true) ? Colors.amber : Colors.grey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0)
+                      ),
+                      padding: const EdgeInsets.all(10),
                     ),
-                    padding: const EdgeInsets.all(10),
+                    child: Text('Poción Sheriff'),
                   ),
-                  child: Text('Poción Pueblo'),
-                  
-                ),
-                FilledButton(
-                  onPressed: _updatePotions,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: (potions > 2 && potionAyudante == true) ? Colors.deepOrangeAccent : Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0)
+                  FilledButton(
+                    onPressed: (){},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: (potions >= 2 && potionPueblo == true) ? Colors.blue : Colors.grey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0)
+                      ),
+                      padding: const EdgeInsets.all(10),
                     ),
-                    padding: const EdgeInsets.all(10),
+                    child: Text('Poción Pueblo'),
+                    
                   ),
-                  child: Text('Poción Ayudante'),
-                  
-                ),
-                //Boton siguiente fase
-                FilledButton(
-                  onPressed: _goToNextPhase,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0)
+                  FilledButton(
+                    onPressed: _updatePotions,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: (potions > 2 && potionAyudante == true) ? Colors.deepOrangeAccent : Colors.grey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0)
+                      ),
+                      padding: const EdgeInsets.all(10),
                     ),
-                    padding: const EdgeInsets.all(10),
+                    child: Text('Poción Ayudante'),
+                    
                   ),
-                  child: Text('Siguiente Fase: $nextStatePhase'),
-                  
-                )
-              ],
-            ),
-            _buildPlayerListView(),
-            
-        // Aquí usamos un ListView para mostrar las acciones
-            Container(
-              height: 130,
-              child: ListView.builder(
-                itemCount: recordActions.length,
-                itemBuilder: (context, index) {
-                  // return ListTile(
-                  //   title: Text(recordActions[index]), // Mostrar cada acción en la lista
-                  // );
-                  if(recordActions[index].contains('NOCHE') || recordActions[index].contains('DIA')){
-                    return Text(recordActions[index], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0,)); // Mostrar cada acción en la lista
-                  }
-                  return  Text(recordActions[index], style: TextStyle( fontSize: 17.0,)); // Mostrar cada acción en la lista
-                  
-                },
+                  //Boton siguiente fase
+                  FilledButton(
+                    onPressed: _goToNextPhase,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0)
+                      ),
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    child: Text('Siguiente Fase: $nextStatePhase'),
+                    
+                  )
+                ],
               ),
-            )
-          ],
+              _buildPlayerListView(),
+              
+          // Aquí usamos un ListView para mostrar las acciones
+              Container(
+                height: 130,
+                child: ListView.builder(
+                  itemCount: recordActions.length,
+                  itemBuilder: (context, index) {
+                    // return ListTile(
+                    //   title: Text(recordActions[index]), // Mostrar cada acción en la lista
+                    // );
+                    if(recordActions[index].contains('NOCHE') || recordActions[index].contains('DIA')){
+                      return Text(recordActions[index], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0,)); // Mostrar cada acción en la lista
+                    }
+                    return  Text(recordActions[index], style: TextStyle( fontSize: 17.0,)); // Mostrar cada acción en la lista
+                    
+                  },
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
