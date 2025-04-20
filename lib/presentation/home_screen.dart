@@ -6,7 +6,6 @@ import 'package:game_wolf/presentation/game_screen.dart';
 import 'package:game_wolf/presentation/widgets/dropdown_levels.dart';
 import 'package:game_wolf/presentation/widgets/search_bar2.dart';
 import 'package:game_wolf/domain/user.dart';
-import 'package:game_wolf/services/read_json.dart';
 import 'package:game_wolf/services/assign_rol.dart';
 class HomeScreen extends StatefulWidget{
   const HomeScreen({super.key});
@@ -22,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen>{
   int _numCazadores = 0;
   //Constante
   static const List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
-  String _selectedValue = levelsList.first; //Valor inicial
+  String _selectedValue = ''; //Valor inicial
   // Lista de jugadores cargados desde el archivo JSON
   List<User> _players = [];
   List<User> _filteredPlayers = []; // Lista que se actualizará con los jugadores filtrados
@@ -34,19 +33,24 @@ class _HomeScreenState extends State<HomeScreen>{
   
   //Navegar a nueva pantalla
   void _startGameScreen() async{
+    // Verificar que se haya seleccionado un nivel
+    if (_selectedValue.isEmpty) {
+      _showMessageDialog("Nivel no seleccionado","Debes seleccionar un nivel para iniciar la partida.");
+      return; // Si no se seleccionó un nivel, no se procede
+    }
     if(_selectedPlayers.length < 7 && _selectedValue == levelsList.first){
-      _showMinimumPlayersDialog("Debes seleccionar al menos 7 jugadores para iniciar la partida en el nivel ${levelsList.first}");
+      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 7 jugadores para iniciar la partida en el nivel ${levelsList.first}");
       return;
     } else if (_selectedPlayers.length < 10 && _selectedValue == levelsList[1]){
-      _showMinimumPlayersDialog("Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
     }
     else if (_selectedPlayers.length < 13  && _selectedValue == levelsList[2]){
-      _showMinimumPlayersDialog("Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
     }
     else if (_selectedPlayers.length < 16  && _selectedValue == levelsList[3]){
-      _showMinimumPlayersDialog("Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
     }
     //Llamar funcion que convierte lista de User a Player
@@ -61,12 +65,12 @@ class _HomeScreenState extends State<HomeScreen>{
   }
 
   // Método para mostrar un AlertDialog cuando hay menos de 7 jugadores
-void _showMinimumPlayersDialog(String message) {
+void _showMessageDialog(String titleDialog, String message) {
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text("Jugadores insuficientes"),
+        title: Text(titleDialog),
         content: Text(message),
         actions: [
           TextButton(
@@ -297,13 +301,7 @@ void _showMinimumPlayersDialog(String message) {
     _selectedPlayers = _players.where((p) => selectedIds.contains(p.id)).toSet();
     });
   }
-  // Future<void> _loadPlayers() async{
-  //   final players = await loadPlayersJson();
-  //   setState(() {
-  //     _players = players;
-  //     _filteredPlayers = players;//Inicializa los jugadores filtrados
-  //   });
-  // }
+
   //Función que será llamada cuando cambie el valor del dropdown
   void _handleDropdownLevelChange(String value){
     setState(() {
@@ -403,11 +401,7 @@ void _showMinimumPlayersDialog(String message) {
         centerTitle: true,
         title: Text('Buscar Jugadores'),
         actions: [
-          IconButton(
-            icon: Icon(_allSelected ? Icons.deselect : Icons.select_all),
-            onPressed: _toggleSelectAll,
-            tooltip: _allSelected ? "Deseleccionar todos" : "Seleccionar todos",
-          ),
+          
         ],
       ),
       body: Container(
@@ -429,22 +423,22 @@ void _showMinimumPlayersDialog(String message) {
                           borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
                         ),
                   ), 
-                  child: const Text("Agregar Jugador"),
+                  child: const Icon(Icons.add),
+                  // child: const Text("Agregar Jugador"),
                 ),
                 const SizedBox(width: 10),
-                FilledButton(
-                  onPressed: () => {},
-                  style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
-                        ),
-                  ),
-                  child: const Text("Guardar Jugadores"),),
+                DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),
+
                 const SizedBox(width: 10),
-                FilledButton(
+                IconButton(
+                  icon: Icon(_allSelected ? Icons.deselect : Icons.select_all),
                   onPressed: _toggleSelectAll,
-                  child: Text(_allSelected ? "Deseleccionar todos" : "Seleccionar todos"),
+                  tooltip: _allSelected ? "Deseleccionar todos" : "Seleccionar todos",
                 ),
+                // FilledButton(
+                //   onPressed: _toggleSelectAll,
+                //   child: Text(_allSelected ? "Deseleccionar todos" : "Seleccionar todos"),
+                // ),
               ],
 
             ),
@@ -458,7 +452,6 @@ void _showMinimumPlayersDialog(String message) {
                     fontSize: 18.0, // Cambia este valor al tamaño que desees
                   ),
                 ),
-                DropdownLevel(items: levelsList, onChanged: _handleDropdownLevelChange),
                 Text('Lobos: $_numLobos | Protector: $_numProtectores | Cazador: $_numCazadores',
                   style: TextStyle(
                     fontSize: 18.0, //cambia este valor al tamaño que deseas
@@ -481,6 +474,8 @@ void _showMinimumPlayersDialog(String message) {
                   child: FilledButton(
                     onPressed: _startGameScreen,
                     style: FilledButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color.fromARGB(147, 49, 220, 98),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
                       ),

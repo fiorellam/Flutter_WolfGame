@@ -48,8 +48,8 @@ class DatabaseHelper{
         );
         return true;
       } else {
-        return false;
         print("El usuario con ese nombre, apellido y teléfono ya existe.");
+        return false;
       }
     }
     catch(e){

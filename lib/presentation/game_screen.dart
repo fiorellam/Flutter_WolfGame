@@ -406,67 +406,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  void _turnAyudante() {
-
-    Player? selectedPlayer; // Jugador seleccionado actualmente
-
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Lobos"),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione un jugador"),
-                  value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'muerto' && player.state?.toLowerCase() != 'Sheriff') // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer = newValue;
-                    });
-                  },
-                ),
-              ],
-            );
-
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                setState((){
-                  selectedPlayer?.state = 'Seleccionado';
-                  Navigator.of(context).pop();
-                });
-              },
-              child: const Text("Aceptar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   //temporizador
   void _showTemporizador() {
     const int totalSeconds = 5 * 60; // 5 minutos en segundos
@@ -474,7 +413,6 @@ class _GameScreenState extends State<GameScreen> {
     int remainingSeconds = totalSeconds;
     Timer? timer;
     Player? selectedPlayer; // Jugador seleccionado actualmente
-    Player? revisoSheriff; // Jugador seleccionado actualmente
     Player? selectedPlayer2; // Jugador seleccionado actualmente
 
     showDialog(
@@ -733,19 +671,6 @@ class _GameScreenState extends State<GameScreen> {
         );
       },
     );
-  }
-    Player? _getRolePlayer(String roleName){
-    Player? player ;
-        try{
-        // Buscar el primer jugador con estado 'Seleccionado'
-          player = widget.selectedPlayers.firstWhere(
-          (player) => player.role == roleName,
-          //  Maneja el caso si no se encuentra el jugador
-        );
-        } catch (e) {
-          player = null;
-        }
-      return player;
   }
     //Modal Curandero
   void _turnCurandero() {
@@ -1207,7 +1132,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Player? selectedPlayer;
     return WillPopScope(
       onWillPop: () => _confirmExit(), // Llamamos a la función
       child: Scaffold(
