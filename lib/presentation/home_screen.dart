@@ -74,9 +74,7 @@ void _showMessageDialog(String titleDialog, String message) {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Cerrar el diálogo
-            },
+            onPressed: () { Navigator.of(context).pop();},
             child: const Text("Aceptar"),
           ),
         ],
@@ -86,6 +84,7 @@ void _showMessageDialog(String titleDialog, String message) {
 }
 
   // Agregar nuevo usuario mediante un modal
+  //TODO: El telefono debe ser unico, no debe duplicarse un jugador, dejar solo nombre completo
   void _showDialogCreateUser() {
     // Controladores para el formulario
     final TextEditingController nameController = TextEditingController();
@@ -101,30 +100,15 @@ void _showMessageDialog(String titleDialog, String message) {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nombre'),
-              ),
-              TextField(
-                controller: lastNameController,
-                decoration: const InputDecoration(labelText: 'Apellido'),
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Teléfono'),
-                keyboardType: TextInputType.phone,
-              ),
-              TextField(
-                controller: numberSeatController,
-                decoration: const InputDecoration(labelText: 'Asiento'),
-              ),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nombre')),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Apellido')),
+              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono'), keyboardType: TextInputType.phone),
+              TextField(controller: numberSeatController, decoration: const InputDecoration(labelText: 'Asiento')),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el modal sin guardar
-              },
+              onPressed: () { Navigator.of(context).pop();},
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
@@ -136,7 +120,6 @@ void _showMessageDialog(String titleDialog, String message) {
                     // numberSeatController.text.isNotEmpty
                     ) {
                       final newSeatNumber = numberSeatController.text.trim();
-
                       // **VALIDAR SI EL NÚMERO DE ASIENTO YA EXISTE**
                       bool seatExists = _players.any((player) => player.numberSeat == newSeatNumber);
 
