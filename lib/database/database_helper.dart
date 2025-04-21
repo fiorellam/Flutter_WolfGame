@@ -62,7 +62,7 @@ class DatabaseHelper{
     return await db.query('users');
   }
 
-  Future<void> updateUser(Database db, User user) async{
+  Future<bool> updateUser(Database db, User user) async{
     try{
       await db.update(
         'users',
@@ -70,8 +70,10 @@ class DatabaseHelper{
         where: 'id = ?',
         whereArgs: [user.id],     
       );
+      return true;
     } catch(e) {
       print("Error updating user: $e");
+      return false;
     }
   }
 
