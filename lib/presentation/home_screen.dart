@@ -133,6 +133,57 @@ class HomeScreenState extends State<HomeScreen>{
     
   }
 
+  // Agregar nuevo usuario mediante un modal
+  void _showDialogCreateUser() {
+    // Controladores para el formulario
+    final nameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final phoneController = TextEditingController();
+    final numberSeatController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Agregar Jugador'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nombre')),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Apellido')),
+              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono'), keyboardType: TextInputType.phone),
+              TextField(controller: numberSeatController, decoration: const InputDecoration(labelText: 'Asiento')),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () { Navigator.of(context).pop();},
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed:  () async {
+                // Validar y agregar el nuevo jugador
+                bool isValid = await _validatePlayer(nameController, lastNameController, phoneController, numberSeatController);
+                if(isValid){
+                  bool seatOccupied = await _isSeatOccupied(numberSeatController.text, 0);
+                  if(seatOccupied){
+                    return;
+                  }
+                  bool isInserted = await _insertUserDB(nameController.text, lastNameController.text, phoneController.text, numberSeatController.text);
+                  if (isInserted) {
+                    Navigator.of(context).pop(); // Cerrar el diálogo al agregar el jugador
+                  }
+                }
+              },
+              child: const Text('Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showDialogEditUser(User user){
     final nameController = TextEditingController(text: user.name);
     final lastNameController = TextEditingController(text: user.lastName);
@@ -141,6 +192,7 @@ class HomeScreenState extends State<HomeScreen>{
 
     showDialog(
       context: context, 
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           title: const Text('Editar Jugador'),
@@ -180,56 +232,6 @@ class HomeScreenState extends State<HomeScreen>{
           ],
         );
       }
-    );
-  }
-
-  // Agregar nuevo usuario mediante un modal
-  void _showDialogCreateUser() {
-    // Controladores para el formulario
-    final nameController = TextEditingController();
-    final lastNameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final numberSeatController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Agregar Jugador'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nombre')),
-              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Apellido')),
-              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono'), keyboardType: TextInputType.phone),
-              TextField(controller: numberSeatController, decoration: const InputDecoration(labelText: 'Asiento')),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () { Navigator.of(context).pop();},
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed:  () async {
-                // Validar y agregar el nuevo jugador
-                bool isValid = await _validatePlayer(nameController, lastNameController, phoneController, numberSeatController);
-                if(isValid){
-                  bool seatOccupied = await _isSeatOccupied(numberSeatController.text, 0);
-                  if(seatOccupied){
-                    return;
-                  }
-                  bool isInserted = await _insertUserDB(nameController.text, lastNameController.text, phoneController.text, numberSeatController.text);
-                  if (isInserted) {
-                    Navigator.of(context).pop(); // Cerrar el diálogo al agregar el jugador
-                  }
-                }
-              },
-              child: const Text('Agregar'),
-            ),
-          ],
-        );
-      },
     );
   }
 
