@@ -2,7 +2,7 @@ class Player{
   final int id;
   final String name;
   final String lastName;
-  final String phone;
+  String phone;
   String role;
   String? secondaryRol;
   String? state;

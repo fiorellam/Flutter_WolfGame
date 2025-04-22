@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       home: const HomeScreen(),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.deepPurple
+        primarySwatch: Colors.cyan
       ),
       themeMode: ThemeMode.dark,
     );

@@ -81,14 +81,12 @@ class _GameScreenState extends State<GameScreen> {
       if (selectedPlayer.secondaryRol == 'Sheriff'){
         potionSheriff = false;
         selectedPlayer.state = 'Vivo';
-        String action = 'El Sheriff ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse';
-        recordActions.add(action);
+        _generateRecord('El Sheriff ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse');
       } else {
         if (selectedPlayer.secondaryRol == 'Ayudante'){
           potionAyudante = false;
           selectedPlayer.state = 'Vivo';
-          String action = 'El ayudante ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse';
-          recordActions.add(action);
+          _generateRecord('El ayudante ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse');
         }
       }    
     });
@@ -146,14 +144,12 @@ class _GameScreenState extends State<GameScreen> {
             setState(() {
               selectedPlayer?.state = 'Vivo';
               selectedPlayer2?.state = 'Vivo';
-              String action = 'Se salvaron ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name }';
-              recordActions.add(action);
+              _generateRecord('Se salvaron ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name }');
             });
           } else {
             setState(() {
               selectedPlayer?.state = 'Vivo';
-              String action = 'Se salvo ${selectedPlayer?.role} - ${selectedPlayer?.name}';
-              recordActions.add(action);
+              _generateRecord('Se salvo ${selectedPlayer?.role} - ${selectedPlayer?.name}');
             });
           }
         } else{
@@ -163,15 +159,13 @@ class _GameScreenState extends State<GameScreen> {
               //if (selectedPlayer.rol != 'Lobo')
               setState(() {
                 selectedPlayer?.state = 'Muerto';
-                String action = 'Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
-                recordActions.add(action);
+                _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
               });
             } else {
               setState(() {
                 selectedPlayer?.state = 'Muerto';
                 selectedPlayer2?.state = 'Muerto';
-                String action = 'Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}';
-                recordActions.add(action);
+                _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}');
               });
             }
           } else {
@@ -187,13 +181,11 @@ class _GameScreenState extends State<GameScreen> {
         .length;
       if (sizeLobo == sizeNoLobos || sizeLobo > sizeNoLobos){
         _whoWonDialog(text: "Ganaron Lobos!!");
-        String action = 'GANAN LOBOS 🐺';
-        recordActions.add(action);
+        recordActions.add('GANAN LOBOS 🐺');
       }else{
         if (sizeLobo == 0){
           _whoWonDialog(text: "Ganaron Aldeanos!!");
-          String action = 'GANAN ALDEANOS';
-          recordActions.add(action);
+          recordActions.add('GANAN ALDEANOS');
         }
       }
 
@@ -261,42 +253,79 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _editItem(int index, Player player) {
-    final secondaryRolController = TextEditingController(text: player.secondaryRol ?? '');
-    final stateController = TextEditingController(text: player.state);
+    // final secondaryRolController = DropdownButtonFormField(items: items, onChanged: onChanged);
+    // final stateController = TextEditingController(text: player.state);
     final numberSeatController = TextEditingController(text: player.numberSeat);
     final roleController = TextEditingController(text: player.role);
+    final phoneController = TextEditingController(text: player.phone);
+
+    String selectedSecondaryRole = player.secondaryRol ?? '';
+    String selectedStatePlayer = player.state ?? '';
+    final List<String> secondaryRoles = ['Sheriff', 'Ayudante'];
+    final List<String> states = ['Vivo', 'Muerto', 'Seleccionado'];
+
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Editar campos'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: roleController,decoration: const InputDecoration(labelText: 'Rol Principal'),),
-                TextField(controller: secondaryRolController,decoration: const InputDecoration(labelText: 'Rol Secundario'),),
-                TextField(controller: stateController,decoration: const InputDecoration(labelText: 'Estado'),),
-                TextField(controller: numberSeatController,decoration: const InputDecoration(labelText: 'No. Asiento'),),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              title: const Text('Editar campos'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(controller: roleController,decoration: const InputDecoration(labelText: 'Rol Principal'),),
+                     DropdownButtonFormField<String>(
+                        value: selectedSecondaryRole.isNotEmpty ? selectedSecondaryRole : null,
+                        decoration: const InputDecoration(labelText: 'Rol Secundario'),
+                        items: secondaryRoles.map((role) {
+                          return DropdownMenuItem(value: role, child: Text(role));
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setModalState(() {
+                              selectedSecondaryRole = value;
+                            });
+                          }
+                        },
+                      ),
+                    // TextField(controller: secondaryRolController,decoration: const InputDecoration(labelText: 'Rol Secundario'),),
+                    // TextField(controller: stateController,decoration: const InputDecoration(labelText: 'Estado'),),
+                    DropdownButtonFormField(
+                      value: selectedStatePlayer.isNotEmpty ? selectedStatePlayer : null,
+                      items: states.map((state){
+                        return DropdownMenuItem(value: state, child: Text(state));
+                      }).toList(), 
+                      onChanged: (value){
+                        setModalState(() {
+                          selectedStatePlayer = value!;
+                        });
+                    }),
+                    TextField(controller: numberSeatController,decoration: const InputDecoration(labelText: 'No. Asiento'),),
+                    TextField(controller: phoneController,decoration: const InputDecoration(labelText: 'Teléfono'),),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      player.secondaryRol = selectedSecondaryRole;
+                      player.state = selectedStatePlayer;
+                      player.numberSeat = numberSeatController.text;
+                      player.role = roleController.text;
+                      player.phone = phoneController.text;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Guardar'),
+                ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  player.secondaryRol = secondaryRolController.text;
-                  player.state = stateController.text;
-                  player.numberSeat = numberSeatController.text;
-                  player.role = roleController.text;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Guardar'),
-            ),
-          ],
+            );
+          }
         );
       },
     );
@@ -333,24 +362,21 @@ class _GameScreenState extends State<GameScreen> {
                 if(selectedPlayer?.flechado == null) {
                   //if (selectedPlayer.rol != 'Lobo')
                   setState(() {
-                    String action = 'No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}';
+                    _generateRecord('No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}');
                     selectedPlayer?.state = 'Muerto';
-                    recordActions.add(action);
                     Navigator.of(context).pop();
                   });
                 } else {
                   setState(() {
                     selectedPlayer?.state = 'Muerto';
                     selectedPlayer2?.state = 'Muerto';
-                    String action = 'No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} y también mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} ${selectedPlayer2?.lastName} porque estaba flechado';
-                    recordActions.add(action);
+                    _generateRecord('No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} y también mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} ${selectedPlayer2?.lastName} porque estaba flechado');
                     Navigator.of(context).pop();
                   });
                 }
                 setState((){
-                  String action = 'No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}';
+                  _generateRecord('No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}');
                   selectedPlayer?.state = 'Muerto';
-                  recordActions.add(action);
                   Navigator.of(context).pop();
                 });
               },
@@ -359,10 +385,9 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 setState((){
-                  String action = 'Se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}';
+                  _generateRecord('Se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}');
                   selectedPlayer?.state = 'Vivo';
                   potionPueblo = false;
-                  recordActions.add(action);
                   Navigator.of(context).pop();
                 });
               },
@@ -455,8 +480,7 @@ class _GameScreenState extends State<GameScreen> {
                 if (selectedPlayer?.flechado != null && selectedPlayer2 != null){
                   if(selectedPlayer2 == null){ //Si no eligen a nadie en la asamblea
                     setState((){
-                      String action = 'En la asamblea no se eligió a nadie';
-                      recordActions.add(action);
+                      _generateRecord('En la asamblea no se eligió a nadie');
                       Navigator.of(context).pop();
                     });
                   }
@@ -465,14 +489,12 @@ class _GameScreenState extends State<GameScreen> {
                   
                   if ((selectedPlayer2?.protegidoActivo == true)){
                     setState((){
-                      String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero esta protegido';
-                      recordActions.add(action);
+                      _generateRecord('En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero esta protegido');
                       Navigator.of(context).pop();
                     });
                   } else {
                     setState((){
-                      String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado';
-                      recordActions.add(action);
+                      _generateRecord('En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado');
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
                       Navigator.of(context).pop();
@@ -481,14 +503,12 @@ class _GameScreenState extends State<GameScreen> {
                 } else {
                   if (selectedPlayer == null){
                     setState((){
-                      String action = 'No se escogió a nadie para matar';
-                      recordActions.add(action);
+                      _generateRecord('No se escogió a nadie para matar');
                       Navigator.of(context).pop();
                     });
                   }else {
                     setState((){
-                      String action = 'En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}';
-                      recordActions.add(action);
+                      _generateRecord('En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
                       selectedPlayer?.state = 'Muerto';
                       Navigator.of(context).pop();
                     });
@@ -525,28 +545,24 @@ class _GameScreenState extends State<GameScreen> {
         (player) => playerSelectedToKill.phone == playerToUpdate.flechado);
         if (selectedPlayer2.protegidoActivo == true){
           setState(() {
-            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} pero esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}';
-            recordActions.add(action);
+            _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} pero esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}');
           });
         } else {
           setState(() {
             playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
             selectedPlayer2?.state = "Muerto"; // Cambiar el estado a "muerto"
-            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name} el cual estaba flechado';
-            recordActions.add(action);
+            _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name} el cual estaba flechado');
           });
         }
       } else{
         if (playerToUpdate.protegidoActivo == true) {
           setState((){
-            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido por lo cual no se pudo matar';
-            recordActions.add(action);
+            _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido por lo cual no se pudo matar');
           });
         } else {
           setState(() {
             playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
-            String action = 'El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}';
-            recordActions.add(action);
+            _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}');
           });
         }
       }
@@ -559,15 +575,16 @@ class _GameScreenState extends State<GameScreen> {
           title: Text('Mensaje Importante'),
           content: Text('Ya no hay mas jugadores para matar'),
           actions: <Widget>[
-            TextButton(
-              onPressed: () {Navigator.of(context).pop();},
-              child: Text('Cerrar'),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop();},child: Text('Cerrar'),),
           ],
         );
       },
       );
     }
+  }
+
+  void _generateRecord(String message){
+    recordActions.add(message);
   }
 
   List<Player> _getPlayersStillAlive() {
@@ -610,21 +627,14 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ],
             );
-
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop();}, child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
                 setState((){
-                  String action = 'Lobos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name }';
-                  recordActions.add(action);
+                  _generateRecord('Lobos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name }');
                   selectedPlayer?.state = 'Seleccionado';
                   Navigator.of(context).pop();
                 });
@@ -675,12 +685,7 @@ class _GameScreenState extends State<GameScreen> {
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
                 if (selectedPlayer?.curado == null){
@@ -704,8 +709,7 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   }
                 }
-                String action = "Curanderos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name}";
-                recordActions.add(action);
+                _generateRecord("Curanderos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name}");
               },
               child: const Text("Aceptar"),
             ),
@@ -755,12 +759,7 @@ class _GameScreenState extends State<GameScreen> {
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop(); },child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
                 if (selectedPlayer?.protegido == null){
@@ -784,8 +783,7 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   }
                 }
-                String action = "Protector selecciono a ${selectedPlayer?.role} - ${selectedPlayer?.name}";
-                recordActions.add(action);
+                _generateRecord("Protector seleccionó a ${selectedPlayer?.role} - ${selectedPlayer?.name}");
                 print(numSize);
                 if(numSize > 1){
                   _turnProtector(numSize - 1);
@@ -857,12 +855,7 @@ class _GameScreenState extends State<GameScreen> {
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
                 setState(() {
@@ -870,8 +863,7 @@ class _GameScreenState extends State<GameScreen> {
                   selectedPlayer2?.flechado = selectedPlayer1?.phone;
                   Navigator.of(context).pop();
                 });
-                String action = "Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}";
-                recordActions.add(action);
+                _generateRecord("Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}");
               },
               child: const Text("Aceptar"),
             ),
@@ -919,21 +911,14 @@ class _GameScreenState extends State<GameScreen> {
                 Text("${selectedPlayer == null ? '' : 'El jugador que elegiste es: ${selectedPlayer?.role}'} ")
               ],
             );
-
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar"),),
             TextButton(
               onPressed: () {
                 setState((){
-                  String action = "Vidente quiso saber el rol de ${selectedPlayer?.role} - ${selectedPlayer?.name}";
-                  recordActions.add(action);
+                  _generateRecord("Vidente quiso saber el rol de ${selectedPlayer?.role} - ${selectedPlayer?.name}");
                   Navigator.of(context).pop();
                 });
               },
@@ -992,12 +977,7 @@ class _GameScreenState extends State<GameScreen> {
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
+            TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
                 if (selectedPlayer?.flechado != null){
@@ -1008,8 +988,7 @@ class _GameScreenState extends State<GameScreen> {
                 //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
                 if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
                   setState((){
-                    String action = 'Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero no lo mato porque esta protegido';
-                    recordActions.add(action);
+                    _generateRecord('Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero no lo mato porque esta protegido');
                     Navigator.of(context).pop();
                   });
                 } else{
@@ -1017,23 +996,20 @@ class _GameScreenState extends State<GameScreen> {
                     setState(() {
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
-                      String action = 'Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mato a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado';
-                      recordActions.add(action);
+                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mato a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
                       Navigator.of(context).pop();
                     });
                   } else {
                     if (selectedPlayer?.role == 'Lobo'){
                       setState(() {
                         selectedPlayer?.state = 'Muerto';
-                        String action = 'Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y lo mato';
-                        recordActions.add(action);
+                        _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y lo mato');
                         Navigator.of(context).pop();
                       });
                     }
                     else {
                       setState((){
-                        String action = 'Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo';
-                        recordActions.add(action);
+                        _generateRecord('Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo');
                         Navigator.of(context).pop();
                       });
                     }
@@ -1065,22 +1041,11 @@ class _GameScreenState extends State<GameScreen> {
                 Text('$text')
               ],
             );
-
             },
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
-              },
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("Aceptar"),
-            ),
+            TextButton( onPressed: () { Navigator.of(context).pop();},child: const Text("Cancelar")),
+            TextButton( onPressed: () {Navigator.of(context).pop();},child: const Text("Aceptar")),
           ],
         );
       },
@@ -1092,18 +1057,82 @@ class _GameScreenState extends State<GameScreen> {
     final int seconds = (totalSeconds % 60).floor();
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
+ 
+  Future <void> openWhatsApp({
+    required String phone,
+    String? text,
+    LaunchMode mode = LaunchMode.externalApplication,
+  }) async {
+    final String textAndroid = text != null ? Uri.encodeFull('&text=$text') : '';
+    final String urlAndroid = 'https://wa.me/send?phone=$phone?text=$textAndroid';
+    final String effectiveURL = urlAndroid;
+    if(await canLaunchUrl(Uri.parse(effectiveURL))) {
+      await launchUrl(Uri.parse(effectiveURL), mode: mode);
+    } else {
+      throw Exception('openWhatsApp could not launching url: $effectiveURL');
+    }
+  }
 
-  @override
+  Future<void> sendWhatsAppMessagesToAll(List<Player> players) async {
+    for (var player in players) {
+      final String phone = player.phone;
+      final String message = Uri.encodeFull('Noche del lobo! tu rol es el siguiente: ${player.role}');
+      final String url = 'https://wa.me/$phone?text=$message';
+
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        print('Error al abrir WhatsApp con el número: $phone');
+      }
+      await Future.delayed(Duration(seconds: 2)); // Pequeña pausa entre envíos
+    }
+}
+  Future<void> sendSMSMessagesToAll(List<Player> players) async {
+  for (var player in players) {
+    final String phone = player.phone;
+    final String message = Uri.encodeFull('Noche del lobo! Tu rol es: ${player.role}');
+    final String smsUrl = 'sms:$phone?body=$message';
+
+    if (await canLaunch(smsUrl)) {
+      await launch(smsUrl);
+    } else {
+      print('No se pudo enviar SMS a: $phone');
+    }
+    await Future.delayed(Duration(seconds: 2)); // Pausa entre mensajes
+  }
+}
+
+  Future<bool> _confirmExit() async{
+      return await showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text("Deseas salir de la partida?"),
+        content: Text('¿Estás seguro que deseas salir? Se perderá la partida y los roles.'),
+        actions: [
+          TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // No salir
+                child: Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true), // Salir
+                child: Text("Salir"),
+              ),
+        ],
+      )
+    );    
+  }
+ @override
   Widget build(BuildContext context) {
+    double fontSize = 17;
     return WillPopScope(
       onWillPop: () => _confirmExit(), // Llamamos a la función
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('JUEGO LOBO - Nivel: ${widget.level} Daycounter: $dayCounter Night: $nightCounter #Jugadores: ${widget.selectedPlayers.length}'),
+          title: Text('JUEGO LOBO - Nivel: ${widget.level} #Jugadores: ${widget.selectedPlayers.length}'),
         ),
         body: Container(
-          margin: const EdgeInsets.all(16.0), //16 px en todos los lados
+          margin: const EdgeInsets.all(15.5), //16 px en todos los lados
           child: Column(
             children: [
               //Cuadros de informacion y botón
@@ -1112,67 +1141,64 @@ class _GameScreenState extends State<GameScreen> {
                 children: [
                   Card(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    color: const Color.fromARGB(255, 137, 108, 188),
+                    color: Colors.grey[900],
                     child: Padding(
                       padding: const EdgeInsets.all(10),
-                      child: Text('Estado: ${isDay? 'Día' : 'Noche'}'),
+                      child: Text('Estado: ${isDay? '☀️' : '🌙'}', style: TextStyle(fontSize: fontSize),),
                     ),
                   ),
-                  Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    color: const Color.fromARGB(255, 137, 108, 188),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Text("Estado: $gameState"),
-                    ) ,
-                  ),
-                  FilledButton(
+                  
+                  FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (potions >= 1 && potionSheriff == true) ? Colors.amber : Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
-                    child: Text('Poción Sheriff'),
+                    icon: Icon(Icons.science_outlined),
+                    label: Text('Sheriff', style: TextStyle(fontSize: fontSize)),
                   ),
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: (){},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (potions >= 2 && potionPueblo == true) ? Colors.blue : Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
-                    child: Text('Poción Pueblo'),
+                    icon: Icon(Icons.science_outlined),
+                    label: Text('Pueblo', style: TextStyle(fontSize: fontSize)),
                     
                   ),
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (potions > 2 && potionAyudante == true) ? Colors.deepOrangeAccent : Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
-                    child: Text('Poción Ayudante'),
+                    icon: Icon(Icons.science_outlined),
+                    label: Text('Ayudante', style: TextStyle(fontSize: fontSize)),
                     
                   ),
+                  Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    color: Colors.grey[900],
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text("Estado: $gameState", style: TextStyle(fontSize: fontSize)),
+                    ) ,
+                  ),
                   //Boton siguiente fase
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: _goToNextPhase,
                     style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                      ),
+                      backgroundColor: Colors.blue[300],
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
-                    child: Text('Siguiente Fase: $nextStatePhase'),
-                    
-                  )
+                    icon: Icon(Icons.arrow_forward_rounded),
+                    label: Text('Sig Fase: $nextStatePhase' , style: TextStyle(fontSize: fontSize)),
+                  ),
                 ],
               ),
               _buildPlayerListView(),
@@ -1220,27 +1246,11 @@ class _GameScreenState extends State<GameScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 //mostrar los datos en columnas
                 children: [
-                  Expanded(
-                      child: Text(
-                          // '${index + 1}',
-                          player.numberSeat ?? '',
-                          style: TextStyle( fontSize: 20.0,))),
-                  Expanded(
-                      child: Text(
-                          '${player.name} ${player.lastName}',
-                          style: TextStyle(fontSize: 20.0,))),
-                  Expanded(
-                      child: Text(
-                          player.role,
-                          style: TextStyle(fontSize: 20.0,))),
-                  Expanded(
-                      child: Text(
-                          player.secondaryRol ?? '',
-                          style: TextStyle(fontSize: 20.0,))),
-                  Expanded(
-                      child: Text(
-                          player.state ?? '',
-                          style: TextStyle(fontSize: 20.0,))),
+                  Expanded(child: Text(player.numberSeat ?? '', style: TextStyle( fontSize: 20.0,))),
+                  Expanded(child: Text('${player.name} ${player.lastName}',style: TextStyle(fontSize: 20.0,))),
+                  Expanded(child: Text(player.role,style: TextStyle(fontSize: 20.0,))),
+                  Expanded(child: Text(player.secondaryRol ?? '',style: TextStyle(fontSize: 20.0,))),
+                  Expanded(child: Text(player.state ?? '',style: TextStyle(fontSize: 20.0,))),
                   SizedBox(
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas
@@ -1249,6 +1259,7 @@ class _GameScreenState extends State<GameScreen> {
                       onPressed: () => _editItem(index, player),
                     ),
                   ),
+                  player.phone.trim().isNotEmpty ?
                   SizedBox(
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas
@@ -1261,6 +1272,7 @@ class _GameScreenState extends State<GameScreen> {
                       //onPressed: () => _editItem(index, player),
                     ),
                   )
+                  : SizedBox(width: 60.0, height: 35.0,)
                 ],
               ),
             ),
@@ -1268,92 +1280,5 @@ class _GameScreenState extends State<GameScreen> {
         },
       ),
     );
-  }
-
-  Future <void> openWhatsApp({
-    required String phone,
-    String? text,
-    LaunchMode mode = LaunchMode.externalApplication,
-  }) async {
-    final String textAndroid = text != null ? Uri.encodeFull('&text=$text') : '';
-    final String urlAndroid = 'https://wa.me/send?phone=$phone?text=$textAndroid';
-    final String effectiveURL = urlAndroid;
-    if(await canLaunchUrl(Uri.parse(effectiveURL))) {
-      await launchUrl(Uri.parse(effectiveURL), mode: mode);
-    } else {
-      throw Exception('openWhatsApp could not launching url: $effectiveURL');
-    }
-  }
-
-  Future<void> sendWhatsAppMessagesToAll(List<Player> players) async {
-    for (var player in players) {
-      final String phone = player.phone;
-      final String message = Uri.encodeFull('Noche del lobo! tu rol es el siguiente: ${player.role}');
-      final String url = 'https://wa.me/$phone?text=$message';
-
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      } else {
-        print('Error al abrir WhatsApp con el número: $phone');
-      }
-      await Future.delayed(Duration(seconds: 2)); // Pequeña pausa entre envíos
-    }
-}
-  Future<void> sendSMSMessagesToAll(List<Player> players) async {
-  for (var player in players) {
-    final String phone = player.phone;
-    final String message = Uri.encodeFull('Noche del lobo! Tu rol es: ${player.role}');
-    final String smsUrl = 'sms:$phone?body=$message';
-
-    if (await canLaunch(smsUrl)) {
-      await launch(smsUrl);
-    } else {
-      print('No se pudo enviar SMS a: $phone');
-    }
-    await Future.delayed(Duration(seconds: 2)); // Pausa entre mensajes
-  }
-}
-
-  // Future<void> sendSMSMessagesToAll2(List<Player> players) async {
-  //   for (var player in players) {
-  //     final String phone = player.phone;
-  //     final String message = 'Noche del lobo! Tu rol es: ${player.role}';
-
-  //     try {
-  //       await sendSMS(
-  //         message: message,
-  //         recipients: [phone],  // Enviar a un solo jugador
-  //         sendDirect: true,      // Envía sin abrir la app de SMS
-  //       );
-  //     } catch (e) {
-  //       print('Error al enviar SMS a $phone: $e');
-  //     }
-
-  //     await Future.delayed(Duration(seconds: 2)); // Pequeña pausa entre mensajes
-  //   }
-  // }
-
-  /*void _sendSms(String text, String phone) async{
-    await sendSMS(message: "Tu rol es: $text", recipients: phone);
-  }*/
-
-  Future<bool> _confirmExit() async{
-      return await showDialog(
-      context: context, 
-      builder: (context) => AlertDialog(
-        title: Text("Deseas salir de la partida?"),
-        content: Text('¿Estás seguro que deseas salir? Se perderá la partida y los roles.'),
-        actions: [
-          TextButton(
-                onPressed: () => Navigator.of(context).pop(false), // No salir
-                child: Text("Cancelar"),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true), // Salir
-                child: Text("Salir"),
-              ),
-        ],
-      )
-    );    
   }
 }
