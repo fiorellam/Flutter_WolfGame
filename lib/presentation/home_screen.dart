@@ -435,6 +435,7 @@ class HomeScreenState extends State<HomeScreen>{
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           title: const Text('Administrador de Partida'),
