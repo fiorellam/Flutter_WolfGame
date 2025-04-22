@@ -508,7 +508,7 @@ class HomeScreenState extends State<HomeScreen>{
       backgroundColor: backgroundColor,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 40, left: 20, right: 20), 
       duration: const Duration(seconds: 3),
     ),
   );
@@ -527,7 +527,7 @@ class HomeScreenState extends State<HomeScreen>{
             FilledButton.icon(
               onPressed: () => _removeSeatsDB(_users), 
               icon: const Icon(Icons.delete_sweep, color: Colors.red),
-              label: const Text('Eliminar asientos'),
+              label: const Text('Eliminar asientos', style: TextStyle(fontSize: 17),),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.black12,
                 foregroundColor: Colors.white,

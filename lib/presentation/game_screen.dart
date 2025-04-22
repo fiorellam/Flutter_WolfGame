@@ -25,7 +25,6 @@ class _GameScreenState extends State<GameScreen> {
   bool potionAyudante = true;
   bool potionPueblo = true;
   int potionUse = 0;
-  int contador = 0;
   bool isDay = true;
   String gameState = "Lobos Turno";
   String nextStatePhase = ''; 
@@ -88,8 +87,37 @@ class _GameScreenState extends State<GameScreen> {
           selectedPlayer.state = 'Vivo';
           _generateRecord('El ayudante ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse');
         }
-      }    
+      }
     });
+  }
+
+  void _updateGameState(List<Phase> currentPhases) {
+     // Actualizar el estado del juego (fase actual)
+      gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+      // Obtener la siguiente fase
+      if (currentPhaseIndex < currentPhases.length - 1) {
+        nextStatePhase = isDay ? dayPhases[currentPhaseIndex + 1].name : nightPhases[currentPhaseIndex + 1].name;
+      } else {
+        // Si estamos en la última fase de un ciclo (día o noche), la siguiente fase será la del ciclo opuesto (día o noche)
+        nextStatePhase = isDay ? nightPhases[0].name : dayPhases[0].name;
+      }
+  }
+  void _determineWinner(){
+    final sizeLobo = widget.selectedPlayers
+      .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role == "Lobo")
+      .length;
+    final sizeNoLobos = widget.selectedPlayers
+      .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role != "Lobo")
+      .length;
+    if (sizeLobo == sizeNoLobos || sizeLobo > sizeNoLobos){
+      _whoWonDialog(text: "Ganaron Lobos!!");
+      recordActions.add('GANAN LOBOS 🐺');
+    }else{
+      if (sizeLobo == 0){
+        _whoWonDialog(text: "Ganaron Aldeanos!!");
+        recordActions.add('GANAN ALDEANOS');
+      }
+    }
   }
   void _goToNextPhase() {
      setState(() {
@@ -102,19 +130,16 @@ class _GameScreenState extends State<GameScreen> {
         // Cambiar entre día y noche y reiniciar el índice
         isDay = !isDay;
         currentPhaseIndex = 0;
-        if (isDay == false) {
-            contador++;
+        if (!isDay) {
             nightCounter++;
             recordActions.add('NOCHE $nightCounter 🌙');
-        } 
-        if(isDay){
+        } else {
           dayCounter++;
           recordActions.add('DIA $dayCounter ☀️');
         }
       }
 
-       // Actualizar el estado del juego (fase actual)
-      gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+      _updateGameState(currentPhases);
       
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
         Player? selectedPlayer; 
@@ -122,8 +147,7 @@ class _GameScreenState extends State<GameScreen> {
         Player? existeSheriff;
         try{
         // Buscar el primer jugador con estado 'Seleccionado'
-          selectedPlayer = widget.selectedPlayers.firstWhere(
-          (player) => player.state == 'Seleccionado',);
+          selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.state == 'Seleccionado');
           if (selectedPlayer.flechado != null){
             selectedPlayer2 = widget.selectedPlayers.firstWhere(
             (player) => selectedPlayer?.phone == player.flechado);
@@ -173,30 +197,9 @@ class _GameScreenState extends State<GameScreen> {
           }
         }
       }
-      final sizeLobo = widget.selectedPlayers
-        .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role == "Lobo")
-        .length;
-      final sizeNoLobos = widget.selectedPlayers
-        .where((player) => (player.state == 'Vivo' || player.state == 'Seleccionado') && player.role != "Lobo")
-        .length;
-      if (sizeLobo == sizeNoLobos || sizeLobo > sizeNoLobos){
-        _whoWonDialog(text: "Ganaron Lobos!!");
-        recordActions.add('GANAN LOBOS 🐺');
-      }else{
-        if (sizeLobo == 0){
-          _whoWonDialog(text: "Ganaron Aldeanos!!");
-          recordActions.add('GANAN ALDEANOS');
-        }
-      }
-
-      // Obtener la siguiente fase
-      if (currentPhaseIndex < currentPhases.length - 1) {
-        nextStatePhase = isDay ? dayPhases[currentPhaseIndex + 1].name : nightPhases[currentPhaseIndex + 1].name;
-      } else {
-        // Si estamos en la última fase de un ciclo (día o noche), la siguiente fase será la del ciclo opuesto (día o noche)
-        nextStatePhase = isDay ? nightPhases[0].name : dayPhases[0].name;
-      }
-      // Actualizar el estado del juego
+      
+      _determineWinner();
+      
       if (isDay && dayPhases[currentPhaseIndex].name == 'Eleccion Sheriff' && !hasSheriffBeenSelected) {
         _turnSheriff();
         hasSheriffBeenSelected = true;
@@ -216,8 +219,7 @@ class _GameScreenState extends State<GameScreen> {
           .length;
         try{
           // Buscar el primer jugador con estado 'Seleccionado'
-          selectedPlayer = widget.selectedPlayers.firstWhere(
-          (player) => player.protegidoActivo == true,);
+          selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.protegidoActivo == true,);
           setState((){
             selectedPlayer?.protegidoActivo = false;
           });
@@ -330,24 +332,24 @@ class _GameScreenState extends State<GameScreen> {
       },
     );
   }
-
+  Player? _getPlayerByState(String state){
+    try{
+      return widget.selectedPlayers.firstWhere((player) => player.state == state);
+    } catch(e){
+      return null;
+    }
+  }
   //Modal lobos
   void _turnSheriff() {
-    Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? selectedPlayer = _getPlayerByState('Seleccionado'); // Jugador seleccionado actualmente
     Player? selectedPlayer2;
     
-    selectedPlayer = widget.selectedPlayers.firstWhere(
-    (player) => player.state == 'Seleccionado',);
-
-    try{
-    // Buscar el primer jugador con estado 'Seleccionado'
-      selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.state == 'Seleccionado',);
-      if (selectedPlayer.flechado != null){
-        selectedPlayer2 = widget.selectedPlayers.firstWhere(
-        (player) => selectedPlayer?.phone == player.flechado);
+    if (selectedPlayer != null && selectedPlayer.flechado != null){
+      try{
+        selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer.phone == player.flechado);
+      } catch (e) {
+        selectedPlayer2 = null;
       }
-    } catch (e) {
-      selectedPlayer = null;
     }
 
     showDialog(
@@ -419,16 +421,11 @@ class _GameScreenState extends State<GameScreen> {
               // Iniciar el temporizador
               timer ??= Timer.periodic(const Duration(seconds: 1), (Timer t) {
                 if (remainingSeconds > 0) {
-                  setState(() {
-                    remainingSeconds--;
-                  });
+                  setState(() { remainingSeconds--;});
                 } else {
                   t.cancel();
-                  // Navigator.of(context).pop();
-                  // _randomPlayerToKill();
                 }
               });
-
               
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -445,21 +442,19 @@ class _GameScreenState extends State<GameScreen> {
                   items: widget.selectedPlayers
                     .where((player) => player.state?.toLowerCase() != 'muerto' && player.protegidoActivo != true) // Excluir jugadores Muertos
                     .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
+                    return DropdownMenuItem<Player>(value: player, child: Text("${player.name} ${player.lastName}"));}).toList(),
                   onChanged: (Player? newValue) {
                     setState(() {
                       selectedPlayer = newValue;
                     });
                   },
                 ),
-                ElevatedButton(onPressed:() {
+                ElevatedButton(
+                  onPressed:() {
                   _randomPlayerToKill();
                   Navigator.of(context).pop();
-                  }, child: Text("Matar al azar"))
+                  }, 
+                  child: Text("Matar al azar"))
               ],
             );
             },
@@ -484,8 +479,7 @@ class _GameScreenState extends State<GameScreen> {
                       Navigator.of(context).pop();
                     });
                   }
-                  selectedPlayer2 = widget.selectedPlayers.firstWhere(
-                  (player) => selectedPlayer?.phone == player.flechado);
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer?.phone == player.flechado);
                   
                   if ((selectedPlayer2?.protegidoActivo == true)){
                     setState((){
@@ -588,7 +582,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   List<Player> _getPlayersStillAlive() {
-  return List<Player>.from(widget.selectedPlayers.where((jugador) => jugador.state == 'Vivo'));
+    return List<Player>.from(widget.selectedPlayers.where((jugador) => jugador.state == 'Vivo'));
   }
   //Modal lobos
   void _turnLobos() {
@@ -1025,7 +1019,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _whoWonDialog({String? text}) {
-
     showDialog(
       context: context,
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
@@ -1034,12 +1027,9 @@ class _GameScreenState extends State<GameScreen> {
           title: const Text("Ganador"),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('$text')
-              ],
+              children: [Text('$text')],
             );
             },
           ),
@@ -1129,7 +1119,7 @@ class _GameScreenState extends State<GameScreen> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('JUEGO LOBO - Nivel: ${widget.level} #Jugadores: ${widget.selectedPlayers.length}'),
+          title: Text('JUEGO LOBO - ${widget.level} - Jugadores: ${widget.selectedPlayers.length}'),
         ),
         body: Container(
           margin: const EdgeInsets.all(15.5), //16 px en todos los lados
@@ -1182,10 +1172,10 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   Card(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    color: Colors.grey[900],
+                    color: Colors.blue[700],
                     child: Padding(
                       padding: const EdgeInsets.all(10),
-                      child: Text("Estado: $gameState", style: TextStyle(fontSize: fontSize)),
+                      child: Text("Estado Actual: $gameState", style: TextStyle(fontSize: fontSize)),
                     ) ,
                   ),
                   //Boton siguiente fase
@@ -1197,7 +1187,7 @@ class _GameScreenState extends State<GameScreen> {
                       padding: const EdgeInsets.all(10),
                     ),
                     icon: Icon(Icons.arrow_forward_rounded),
-                    label: Text('Sig Fase: $nextStatePhase' , style: TextStyle(fontSize: fontSize)),
+                    label: Text('Fase: $nextStatePhase' , style: TextStyle(fontSize: fontSize)),
                   ),
                 ],
               ),
@@ -1234,7 +1224,6 @@ class _GameScreenState extends State<GameScreen> {
         itemCount: widget.selectedPlayers.length,
         itemBuilder: (context, index) {
           final player = widget.selectedPlayers[index];
-
           // Condición para resaltar el renglón en rojo para hacer los cambios dinamicamente
           //final isAlive = player.state?.toLowerCase() == "vivo";
           return Card(
@@ -1260,19 +1249,19 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                   ),
                   player.phone.trim().isNotEmpty ?
-                  SizedBox(
-                     width: 60.0,  // Aquí puedes establecer el ancho del IconButton
-                     height: 35.0,  // Altura si lo necesitas
-                     child: IconButton(
-                      icon: const Icon(Icons.message, color: Colors.white),
-                      onPressed: () {
-                        launch('sms:${player.phone}?body=${player.role}');
-                        //openWhatsApp(phone: '${player.phone}', text: '${player.role}');
-                      },
-                      //onPressed: () => _editItem(index, player),
-                    ),
-                  )
-                  : SizedBox(width: 60.0, height: 35.0,)
+                    SizedBox(
+                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
+                      height: 35.0,  // Altura si lo necesitas
+                      child: IconButton(
+                        icon: const Icon(Icons.message, color: Colors.white),
+                        onPressed: () {
+                          launch('sms:${player.phone}?body=${player.role}');
+                          //openWhatsApp(phone: '${player.phone}', text: '${player.role}');
+                        },
+                        //onPressed: () => _editItem(index, player),
+                      ),
+                    )
+                    : SizedBox(width: 60.0, height: 35.0,)
                 ],
               ),
             ),
