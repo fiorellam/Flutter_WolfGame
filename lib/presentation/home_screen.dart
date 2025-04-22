@@ -74,113 +74,6 @@ class HomeScreenState extends State<HomeScreen>{
     );
   }
 
-  // Método para mostrar un AlertDialog cuando hay menos de 7 jugadores
-  void _showMessageDialog(String titleDialog, String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(titleDialog),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () { Navigator.of(context).pop();},
-              child: const Text("Aceptar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Agregar nuevo usuario mediante un modal
-  //TODO: El telefono debe ser unico, no debe duplicarse un jugador, dejar solo nombre completo
-  //TODO: Validar que todos los jugadores seleccionados tienen un asiento
-  void _showDialogCreateUser() {
-    // Controladores para el formulario
-    final nameController = TextEditingController();
-    final lastNameController = TextEditingController();
-    final phoneController = TextEditingController();
-    final numberSeatController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Agregar Jugador'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nombre')),
-              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Apellido')),
-              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono'), keyboardType: TextInputType.phone),
-              TextField(controller: numberSeatController, decoration: const InputDecoration(labelText: 'Asiento')),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () { Navigator.of(context).pop();},
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed:  () async {
-                // Validar y agregar el nuevo jugador
-                bool isValid = await _validatePlayer(nameController, lastNameController, phoneController, numberSeatController);
-                if(isValid){
-                  bool seatOccupied = await _isSeatOccupied(numberSeatController.text, 0);
-                  if(seatOccupied){
-                    return;
-                  }
-                  bool isInserted = await _insertUserDB(nameController.text, lastNameController.text, phoneController.text, numberSeatController.text);
-                  if (isInserted) {
-                    Navigator.of(context).pop(); // Cerrar el diálogo al agregar el jugador
-                  }
-                }
-              },
-              child: const Text('Agregar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<bool> _validatePlayer(TextEditingController name, TextEditingController lastName, TextEditingController phone, TextEditingController seat) async{
-    //Validar campos
-    if (name.text.isEmpty || lastName.text.isEmpty ) {
-      showCustomSnackBar(context,'Nombre y apellido son obligatorios', warningColor!);
-      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text ('Nombre y apellido son obligatorios')));
-      return false;
-    }   
-    return true; // Esto indica que la validación fue exitosa
-  }
-
-  Future<bool> _insertUserDB (String name, String lastName, String phone, String seat) async{
-    //Usuario que se va a insertar
-    final newUser = User(
-      id: 0,
-      name: name,
-      lastName: lastName,
-      phone: phone,
-      numberSeat: seat
-    );
-    
-    //Inserción en la base de datos
-    final db = await _databaseHelper.getDatabase();
-    bool userAdded = await _databaseHelper.insertUser(db, newUser);
-
-    if (userAdded) {
-      await _loadPlayers(); //Recarga de jugadores
-      if (!mounted) return false; //  Verifica si el widget aún está activo
-      showCustomSnackBar(context, 'Jugador agregado con éxito.', successColor!);
-      return true;
-    } else {
-      if (!mounted) return false; //  Verifica si el widget aún está activo
-      showCustomSnackBar(context, 'Este usuario ya existe.', warningColor!);
-      return false;
-    }
-  }
-
   //Verificar si el asiento esta ocupado
   Future<bool> _isSeatOccupied(String seat, int userId) async{
     seat = seat.trim();
@@ -205,7 +98,7 @@ class HomeScreenState extends State<HomeScreen>{
     return false; //El asiento no está ocupado
   }
 
-  void _removeSeats(List<User> users) async {
+  void _removeSeatsDB(List<User> users) async {
     return await showDialog(
       context: context, 
       builder: (context) => AlertDialog(
@@ -290,6 +183,82 @@ class HomeScreenState extends State<HomeScreen>{
     );
   }
 
+  // Agregar nuevo usuario mediante un modal
+  void _showDialogCreateUser() {
+    // Controladores para el formulario
+    final nameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final phoneController = TextEditingController();
+    final numberSeatController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Agregar Jugador'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Nombre')),
+              TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Apellido')),
+              TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono'), keyboardType: TextInputType.phone),
+              TextField(controller: numberSeatController, decoration: const InputDecoration(labelText: 'Asiento')),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () { Navigator.of(context).pop();},
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed:  () async {
+                // Validar y agregar el nuevo jugador
+                bool isValid = await _validatePlayer(nameController, lastNameController, phoneController, numberSeatController);
+                if(isValid){
+                  bool seatOccupied = await _isSeatOccupied(numberSeatController.text, 0);
+                  if(seatOccupied){
+                    return;
+                  }
+                  bool isInserted = await _insertUserDB(nameController.text, lastNameController.text, phoneController.text, numberSeatController.text);
+                  if (isInserted) {
+                    Navigator.of(context).pop(); // Cerrar el diálogo al agregar el jugador
+                  }
+                }
+              },
+              child: const Text('Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _insertUserDB (String name, String lastName, String phone, String seat) async{
+    //Usuario que se va a insertar
+    final newUser = User(
+      id: 0,
+      name: name,
+      lastName: lastName,
+      phone: phone,
+      numberSeat: seat
+    );
+    
+    //Inserción en la base de datos
+    final db = await _databaseHelper.getDatabase();
+    bool userAdded = await _databaseHelper.insertUser(db, newUser);
+
+    if (userAdded) {
+      await _loadPlayers(); //Recarga de jugadores
+      if (!mounted) return false; //  Verifica si el widget aún está activo
+      showCustomSnackBar(context, 'Jugador agregado con éxito.', successColor!);
+      return true;
+    } else {
+      if (!mounted) return false; //  Verifica si el widget aún está activo
+      showCustomSnackBar(context, 'Este usuario ya existe.', warningColor!);
+      return false;
+    }
+  }
+
   Future<bool> _updateUserDB (User user, TextEditingController nameController, TextEditingController lastNameController, TextEditingController phoneController, TextEditingController numberSeatController) async{
     final updatedUser = User(
       id: user.id,
@@ -326,6 +295,22 @@ class HomeScreenState extends State<HomeScreen>{
     }
   }
 
+  void _deleteUser(User user) async {
+      final db = await _databaseHelper.getDatabase();
+      await _databaseHelper.deleteUser(db, user);
+      await _loadPlayers(); // Recargar lista
+  }
+
+  Future<bool> _validatePlayer(TextEditingController name, TextEditingController lastName, TextEditingController phone, TextEditingController seat) async{
+    //Validar campos
+    if (name.text.isEmpty || lastName.text.isEmpty ) {
+      showCustomSnackBar(context,'Nombre y apellido son obligatorios', warningColor!);
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text ('Nombre y apellido son obligatorios')));
+      return false;
+    }   
+    return true; // Esto indica que la validación fue exitosa
+  }
+
   bool _validateUniquePhonesAndSeats(){
     final Map<String, List<User>> phoneMap = {};
     final seats = <String>{};
@@ -335,7 +320,7 @@ class HomeScreenState extends State<HomeScreen>{
       final seat = user.numberSeat?.trim();
       if (phone.isEmpty) continue;
 
-      if (!phoneMap.containsKey(phone)) {
+       if (!phoneMap.containsKey(phone)) {
         phoneMap[phone] = [];
       }
       phoneMap[phone]!.add(user);
@@ -362,12 +347,6 @@ class HomeScreenState extends State<HomeScreen>{
       return false;
     }
     return true;
-  }
-
-  void _deleteUser(User user) async {
-    final db = await _databaseHelper.getDatabase();
-    await _databaseHelper.deleteUser(db, user);
-    await _loadPlayers(); // Recargar lista
   }
 
   List<Player> convertUsersToPlayers(List<User> users){
@@ -497,6 +476,24 @@ class HomeScreenState extends State<HomeScreen>{
       },
     );
   }
+   // Método para mostrar un AlertDialog cuando hay menos de 7 jugadores
+  void _showMessageDialog(String titleDialog, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(titleDialog),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () { Navigator.of(context).pop();},
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void showCustomSnackBar(BuildContext context, String message, Color backgroundColor) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -525,7 +522,7 @@ class HomeScreenState extends State<HomeScreen>{
             padding: const EdgeInsets.only(right: 16.0),
             child: 
             FilledButton.icon(
-              onPressed: () => _removeSeats(_users), 
+              onPressed: () => _removeSeatsDB(_users), 
               icon: const Icon(Icons.delete_sweep, color: Colors.red),
               label: const Text('Eliminar asientos'),
               style: FilledButton.styleFrom(
