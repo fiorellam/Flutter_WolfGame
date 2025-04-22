@@ -5,7 +5,6 @@ import 'package:game_wolf/domain/phase.dart';
 import 'package:game_wolf/domain/phases_by_level.dart';
 import 'package:game_wolf/domain/player.dart';
 import 'package:game_wolf/services/phases_assign.dart';
-//import 'package:game_wolf/presentation/widgets/dropdown_players.dart';
 import 'package:url_launcher/url_launcher.dart';
 //import 'package:flutter_sms/flutter_sms.dart';
 
@@ -13,10 +12,7 @@ class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
   final String level;
 
-  const GameScreen({super.key, 
-    required this.selectedPlayers,
-    required this.level
-  });
+  const GameScreen({super.key, required this.selectedPlayers, required this.level});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -51,7 +47,6 @@ class _GameScreenState extends State<GameScreen> {
   void initState(){
     super.initState();
     _initializePhases();
-
   }
 
   Future<void> _initializePhases() async{
@@ -252,12 +247,6 @@ class _GameScreenState extends State<GameScreen> {
             // Aquí colocas el código para realizar la acción de curar, si es necesario
           _turnCurandero();
         } else {
-          setState(() {
-            //TODO: saltar a las fases siguientes si el personaje con un rol especifico y unico ya murio
-            // currentPhaseIndex++;
-            // gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
-            // nextStatePhase = isDay ? dayPhases[currentPhaseIndex + 1].name : nightPhases[currentPhaseIndex + 1].name;
-          });
         }
       }
 
@@ -272,14 +261,10 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _editItem(int index, Player player) {
-    final TextEditingController secondaryRolController = 
-      TextEditingController(text: player.secondaryRol ?? '');
-    final TextEditingController stateController = 
-      TextEditingController(text: player.state);
-    final TextEditingController numberSeatController = 
-      TextEditingController(text: player.numberSeat);
-    final TextEditingController roleController = 
-      TextEditingController(text: player.role);
+    final secondaryRolController = TextEditingController(text: player.secondaryRol ?? '');
+    final stateController = TextEditingController(text: player.state);
+    final numberSeatController = TextEditingController(text: player.numberSeat);
+    final roleController = TextEditingController(text: player.role);
 
     showDialog(
       context: context,
@@ -290,30 +275,15 @@ class _GameScreenState extends State<GameScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: roleController,
-                  decoration: const InputDecoration(labelText: 'Rol Principal'),
-                ),
-                TextField(
-                  controller: secondaryRolController,
-                  decoration: const InputDecoration(labelText: 'Rol Secundario'),
-                ),
-                TextField(
-                  controller: stateController,
-                  decoration: const InputDecoration(labelText: 'Estado'),
-                ),
-                TextField(
-                  controller: numberSeatController,
-                  decoration: const InputDecoration(labelText: 'No. Asiento'),
-                ),
+                TextField(controller: roleController,decoration: const InputDecoration(labelText: 'Rol Principal'),),
+                TextField(controller: secondaryRolController,decoration: const InputDecoration(labelText: 'Rol Secundario'),),
+                TextField(controller: stateController,decoration: const InputDecoration(labelText: 'Estado'),),
+                TextField(controller: numberSeatController,decoration: const InputDecoration(labelText: 'No. Asiento'),),
               ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -334,7 +304,6 @@ class _GameScreenState extends State<GameScreen> {
 
   //Modal lobos
   void _turnSheriff() {
-
     Player? selectedPlayer; // Jugador seleccionado actualmente
     Player? selectedPlayer2;
     
@@ -343,8 +312,7 @@ class _GameScreenState extends State<GameScreen> {
 
     try{
     // Buscar el primer jugador con estado 'Seleccionado'
-      selectedPlayer = widget.selectedPlayers.firstWhere(
-      (player) => player.state == 'Seleccionado',);
+      selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.state == 'Seleccionado',);
       if (selectedPlayer.flechado != null){
         selectedPlayer2 = widget.selectedPlayers.firstWhere(
         (player) => selectedPlayer?.phone == player.flechado);
@@ -469,7 +437,6 @@ class _GameScreenState extends State<GameScreen> {
                   }, child: Text("Matar al azar"))
               ],
             );
-
             },
           ),
           actions: [
@@ -593,16 +560,13 @@ class _GameScreenState extends State<GameScreen> {
           content: Text('Ya no hay mas jugadores para matar'),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                // Cerrar el AlertDialog cuando se presione "Cerrar"
-                Navigator.of(context).pop();
-              },
+              onPressed: () {Navigator.of(context).pop();},
               child: Text('Cerrar'),
             ),
           ],
         );
       },
-    );
+      );
     }
   }
 
@@ -674,7 +638,6 @@ class _GameScreenState extends State<GameScreen> {
   }
     //Modal Curandero
   void _turnCurandero() {
-
     Player? selectedPlayer; // Jugador seleccionado actualmente
 
     showDialog(
@@ -1248,7 +1211,6 @@ class _GameScreenState extends State<GameScreen> {
 
           // Condición para resaltar el renglón en rojo para hacer los cambios dinamicamente
           //final isAlive = player.state?.toLowerCase() == "vivo";
-
           return Card(
             color: player.state?.toLowerCase() == "vivo" ? const Color.fromARGB(147, 49, 220, 98) : player.state?.toLowerCase() == "muerto" ? Colors.red.shade300 : const Color.fromARGB(136, 229, 255, 0),
             margin: EdgeInsets.all(4),
@@ -1267,10 +1229,6 @@ class _GameScreenState extends State<GameScreen> {
                       child: Text(
                           '${player.name} ${player.lastName}',
                           style: TextStyle(fontSize: 20.0,))),
-                  // Expanded(
-                  //     child: Text(
-                  //         player.numberSeat ?? '',
-                  //         style: TextStyle(fontSize: 20.0,))),
                   Expanded(
                       child: Text(
                           player.role,
