@@ -11,10 +11,10 @@ class HomeScreen extends StatefulWidget{
   const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>{
+class HomeScreenState extends State<HomeScreen>{
   //esto es para modificar las variables desde la funcion _adminPartida
   int _numLobos = 0;
   int _numProtectores = 0;
@@ -23,38 +23,50 @@ class _HomeScreenState extends State<HomeScreen>{
   static const List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
   String _selectedValue = ''; //Valor inicial
   // Lista de jugadores cargados desde el archivo JSON
-  List<User> _players = [];
-  List<User> _filteredPlayers = []; // Lista que se actualizará con los jugadores filtrados
+  List<User> _users = [];
+  List<User> _filteredUsers = []; // Lista que se actualizará con los jugadores filtrados
   //En Dart, un Set es una colección no ordenada de elementos únicos. A diferencia de una List, que permite elementos duplicados, 
   //un Set garantiza que cada elemento se aparezca solo una vez. Por lo tanto, si intentas agregar un elemento que ya existe en un Set, no se agregará de nuevo.
-  Set<User> _selectedPlayers = {}; // Conjunto para almacenar los jugadores seleccionados
+  Set<User> _selectedUsers = {}; // Conjunto para almacenar los jugadores seleccionados
   bool _allSelected = false;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
+  Color? warningColor = Colors.yellow[400];
+  Color? errorColor = Colors.red[300];
+  Color? successColor = Colors.green[500];
   
   //Navegar a nueva pantalla
   void _startGameScreen() async{
+    if(!_validateUniquePhonesAndSeats()){
+      return;
+    }
     // Verificar que se haya seleccionado un nivel
     if (_selectedValue.isEmpty) {
       _showMessageDialog("Nivel no seleccionado","Debes seleccionar un nivel para iniciar la partida.");
       return; // Si no se seleccionó un nivel, no se procede
     }
-    if(_selectedPlayers.length < 7 && _selectedValue == levelsList.first){
+    if(_selectedUsers.length < 7 && _selectedValue == levelsList.first){
       _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 7 jugadores para iniciar la partida en el nivel ${levelsList.first}");
       return;
-    } else if (_selectedPlayers.length < 10 && _selectedValue == levelsList[1]){
+    } else if (_selectedUsers.length < 10 && _selectedValue == levelsList[1]){
       _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
-    } else if (_selectedPlayers.length < 13  && _selectedValue == levelsList[2]){
+    } else if (_selectedUsers.length < 13  && _selectedValue == levelsList[2]){
       _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
-    } else if (_selectedPlayers.length < 16  && _selectedValue == levelsList[3]){
+    } else if (_selectedUsers.length < 16  && _selectedValue == levelsList[3]){
       _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
     }
     //Llamar funcion que convierte lista de User a Player
-    List<Player> gamePlayers = convertUsersToPlayers(_selectedPlayers.toList());
+    List<Player> gamePlayers = convertUsersToPlayers(_selectedUsers.toList());
     //Asignar roles a los jugadores
     await assignRolesToPlayers(gamePlayers, _selectedValue, _numLobos, _numProtectores, _numCazadores);
+
+    // Verificar si el widget aún está montado antes de usar context
+    // Después de un await, como en:
+    // await assignRolesToPlayers(...)
+    // el widget puede haber sido desmontado (por ejemplo, si el usuario salió de la pantalla). Entonces, si haces algo como Navigator.push(context, ...) después de eso, podrías estar usando un BuildContext que ya no es válido, y eso causa bugs sutiles (crashes, mal comportamiento).
+    if (!mounted) return;
 
     Navigator.push(
       context, 
@@ -115,6 +127,10 @@ class _HomeScreenState extends State<HomeScreen>{
                 // Validar y agregar el nuevo jugador
                 bool isValid = await _validatePlayer(nameController, lastNameController, phoneController, numberSeatController);
                 if(isValid){
+                  bool seatOccupied = await _isSeatOccupied(numberSeatController.text, 0);
+                  if(seatOccupied){
+                    return;
+                  }
                   bool isInserted = await _insertUserDB(nameController.text, lastNameController.text, phoneController.text, numberSeatController.text);
                   if (isInserted) {
                     Navigator.of(context).pop(); // Cerrar el diálogo al agregar el jugador
@@ -129,20 +145,13 @@ class _HomeScreenState extends State<HomeScreen>{
     );
   }
 
-
   Future<bool> _validatePlayer(TextEditingController name, TextEditingController lastName, TextEditingController phone, TextEditingController seat) async{
     //Validar campos
     if (name.text.isEmpty || lastName.text.isEmpty ) {
-      showCustomSnackBar(context,'Nombre y apellido son obligatorios');
+      showCustomSnackBar(context,'Nombre y apellido son obligatorios', warningColor!);
       // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text ('Nombre y apellido son obligatorios')));
       return false;
     }   
-
-    //Validar si el asiento esta ocupado
-    if(await _isSeatOccupied(seat.text)){
-      return false;
-    }
-    // Si todas las validaciones pasan, puedes agregar al jugador
     return true; // Esto indica que la validación fue exitosa
   }
 
@@ -162,24 +171,73 @@ class _HomeScreenState extends State<HomeScreen>{
 
     if (userAdded) {
       await _loadPlayers(); //Recarga de jugadores
-      showCustomSnackBar(context, 'Jugador agregado con éxito.');
+      if (!mounted) return false; //  Verifica si el widget aún está activo
+      showCustomSnackBar(context, 'Jugador agregado con éxito.', successColor!);
       return true;
     } else {
-      showCustomSnackBar(context, 'Este usuario ya existe.');
+      if (!mounted) return false; //  Verifica si el widget aún está activo
+      showCustomSnackBar(context, 'Este usuario ya existe.', warningColor!);
       return false;
     }
   }
 
   //Verificar si el asiento esta ocupado
-  Future<bool> _isSeatOccupied(String seat) async{
+  Future<bool> _isSeatOccupied(String seat, int userId) async{
+    seat = seat.trim();
+    bool seatExists;
+    //si se deja el asiento vacio, no pasa nada
+    if(seat.isEmpty || seat == '0' || seat == ' ' || seat == ''){
+      return false;
+    }
+    //Si se envia el user Id
+    if(userId != 0){
+      //Se verifica si el asiento esta ocupado y se excluye el usuario que se envia como parametro de la lista de jugadores
+      seatExists = _users.any((player) => player.numberSeat?.trim() == seat.trim() && player.id != userId);
+    } else {
+      //Aqui solo se verifica si el asiento esta ocupado por algun usuario
+      seatExists = _users.any((player) => player.numberSeat?.trim() == seat.trim());
+    }
 
-    bool seatExists = _players.any((player) => player.numberSeat == seat);
-
-    if (seatExists && seat != '0' && seat != '' && seat != ' ' ) {
-      showCustomSnackBar(context, 'Este número de asiento ya está ocupado.');
+    if (seatExists) {
+      showCustomSnackBar(context, 'Este número de asiento ya está ocupado.', warningColor!);
       return true; // El asiento ya está ocupado
     }
     return false; //El asiento no está ocupado
+  }
+
+  void _removeSeats(List<User> users) async {
+    return await showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text("Deseas eliminar los asientos de los jugadores?"),
+        content: Text('¿Estás seguro que deseas eliminar los asientos?'),
+        actions: [
+          TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // No salir
+                child: Text("Cancelar"),
+              ),
+          TextButton(
+            onPressed: () async{
+              final db = await _databaseHelper.getDatabase();
+              for(var user in users){
+                if(user.numberSeat != '' || user.numberSeat != ' ' || user.numberSeat!.trim().isNotEmpty){
+                  user.numberSeat = '';
+                  await _databaseHelper.updateUser(db, user);
+                }
+              }
+              await _loadPlayers();
+
+              if (mounted) {
+                Navigator.of(context).pop(false);
+                showCustomSnackBar(context, 'Asientos eliminados correctamente.', successColor!);
+              }
+            }, // Salir
+            child: Text("Eliminar asientos"),
+          ),
+        ],
+      )
+    );    
+    
   }
 
   void _showDialogEditUser(User user){
@@ -209,12 +267,13 @@ class _HomeScreenState extends State<HomeScreen>{
                 bool isValid = await _validatePlayer(nameController, lastNameController, phoneController, numberSeatController);
                 if(isValid){
                   //Compara el asiento nuevo con el anterior
-                  bool isSeatChanged = numberSeatController.text != user.numberSeat;
+                  // String newSeat = numberSeatController.text.trim();
+                  // String? currentSeat = user.numberSeat?.trim();
+                  bool isSeatChanged = numberSeatController.text.trim() != user.numberSeat?.trim();
                   if(isSeatChanged){
                     // Si el asiento ha cambiado, validamos si está ocupado
-                    if(await _isSeatOccupied(numberSeatController.text) ){
-                      showCustomSnackBar(context, 'Este número de asiento ya está ocupado.');
-                      return; //
+                    if(await _isSeatOccupied(numberSeatController.text.trim(), user.id) ){
+                      return; // Si el asiento está ocupado, no hacemos nada más
                     }
                   }
                   bool isUpdated = await _updateUserDB(user, nameController, lastNameController, phoneController, numberSeatController);
@@ -246,23 +305,63 @@ class _HomeScreenState extends State<HomeScreen>{
 
     if(isUpdated){
       setState(() {
-        int indexUser = _players.indexWhere((us) => us.id == user.id);
+        int indexUser = _users.indexWhere((us) => us.id == user.id);
         if(indexUser != -1 ){
-          _players[indexUser] = updatedUser;
+          _users[indexUser] = updatedUser;
         }
         // También actualizar la lista filtrada si se está usando
-        int filteredIndex = _filteredPlayers.indexWhere((u) => u.id == user.id);
+        int filteredIndex = _filteredUsers.indexWhere((u) => u.id == user.id);
           if (filteredIndex != -1) {
-            _filteredPlayers[filteredIndex] = updatedUser;
+            _filteredUsers[filteredIndex] = updatedUser;
           }
         });
       await _loadPlayers(); // Recargar lista
-      showCustomSnackBar(context, 'Jugador actualizado con éxito.');
+      if (!mounted) return false; //  Verifica si el widget aún está activo
+      showCustomSnackBar(context, 'Jugador actualizado con éxito.', successColor!);
       return true;
     } else {
-      showCustomSnackBar(context, 'No se pudo actualizar al jugador.');
+      if (!mounted) return false;
+      showCustomSnackBar(context, 'No se pudo actualizar al jugador.', errorColor!);
       return false;
     }
+  }
+
+  bool _validateUniquePhonesAndSeats(){
+    final Map<String, List<User>> phoneMap = {};
+    final seats = <String>{};
+
+    for (var user in _selectedUsers) {
+      final phone = user.phone.trim();
+      final seat = user.numberSeat?.trim();
+      if (phone.isEmpty) continue;
+
+      if (!phoneMap.containsKey(phone)) {
+        phoneMap[phone] = [];
+      }
+      phoneMap[phone]!.add(user);
+
+      if(seat != null && seat.trim().isNotEmpty){
+        if(seats.contains(seat)){
+          showCustomSnackBar(context, 'De los jugadores seleccionados 2 tienen el mismo asiento', errorColor!);
+          return false;
+        } else{
+          seats.add(seat);
+        }
+      } else {
+        _showMessageDialog('Asiento faltante', "El jugador ${user.name} ${user.lastName} no tiene número de asiento.");
+        return false;
+      }
+    }
+    final duplicates = phoneMap.entries.where((e) => e.value.length > 1).toList();
+  
+    if (duplicates.isNotEmpty) {
+      for (var entry in duplicates) {
+        final players = entry.value.map((u) => '${u.name} ${u.lastName}').join(', ');
+        _showMessageDialog('Teléfono duplicado', 'Teléfono: ${entry.key} está repetido por: $players');
+      }
+      return false;
+    }
+    return true;
   }
 
   void _deleteUser(User user) async {
@@ -290,9 +389,9 @@ class _HomeScreenState extends State<HomeScreen>{
     final usersData = await _databaseHelper.getUsers(db);
 
      // Guardar los IDs de los jugadores seleccionados
-    final selectedIds = _selectedPlayers.map((p) => p.id).toSet();
+    final selectedIds = _selectedUsers.map((p) => p.id).toSet();
     setState(() {
-      _players = usersData.map((userData){
+      _users = usersData.map((userData){
         return User(
           id: userData['id'],
           name: userData['name'],
@@ -301,9 +400,9 @@ class _HomeScreenState extends State<HomeScreen>{
           numberSeat: userData['numberSeat'],
         );
       }).toList();
-      _filteredPlayers = _players;//Inicializa los jugadores filtrados
+      _filteredUsers = _users;//Inicializa los jugadores filtrados
       // Restaurar la selección de los jugadores previos
-    _selectedPlayers = _players.where((p) => selectedIds.contains(p.id)).toSet();
+    _selectedUsers = _users.where((p) => selectedIds.contains(p.id)).toSet();
     });
   }
 
@@ -317,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen>{
   // Método que maneja los resultados filtrados
   void _onFilter(List<String> filteredItems) {
   setState(() {
-    _filteredPlayers = _players
+    _filteredUsers = _users
       .where((player) => filteredItems.any((filter) => player.name.toLowerCase().contains(filter.toLowerCase())))
       .toList();
   });
@@ -326,10 +425,10 @@ class _HomeScreenState extends State<HomeScreen>{
    // Método que maneja la selección de un jugador
   void _onSelectPlayer(User player) {
     setState(() {
-      if (_selectedPlayers.contains(player)) {
-        _selectedPlayers.remove(player); // Si ya está seleccionado, lo deseleccionamos
+      if (_selectedUsers.contains(player)) {
+        _selectedUsers.remove(player); // Si ya está seleccionado, lo deseleccionamos
       } else {
-        _selectedPlayers.add(player); // Si no está seleccionado, lo seleccionamos
+        _selectedUsers.add(player); // Si no está seleccionado, lo seleccionamos
       }
     });
   }
@@ -338,9 +437,9 @@ class _HomeScreenState extends State<HomeScreen>{
   void _toggleSelectAll() {
     setState(() {
       if (_allSelected) {
-        _selectedPlayers.clear();
+        _selectedUsers.clear();
       } else {
-        _selectedPlayers.addAll(_filteredPlayers);
+        _selectedUsers.addAll(_filteredUsers);
       }
       _allSelected = !_allSelected;
     });
@@ -399,14 +498,14 @@ class _HomeScreenState extends State<HomeScreen>{
     );
   }
 
-  void showCustomSnackBar(BuildContext context, String message) {
+  void showCustomSnackBar(BuildContext context, String message, Color backgroundColor) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
         message,
         style: const TextStyle(color: Colors.white, fontSize: 18),
       ),
-      backgroundColor: Colors.blue[300],
+      backgroundColor: backgroundColor,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       margin: const EdgeInsets.all(16),
@@ -422,7 +521,20 @@ class _HomeScreenState extends State<HomeScreen>{
         centerTitle: true,
         title: Text('Buscar Jugadores'),
         actions: [
-          
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: 
+            FilledButton.icon(
+              onPressed: () => _removeSeats(_users), 
+              icon: const Icon(Icons.delete_sweep, color: Colors.red),
+              label: const Text('Eliminar asientos'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.black12,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            )
+          )
         ],
       ),
       body: Container(
@@ -434,7 +546,7 @@ class _HomeScreenState extends State<HomeScreen>{
                 //SearchBar Ocupa el mayor espacio
                 Expanded(
                   // Usamos el widget SearchBar
-                  child: SearchBar2(items: _players.map((player) => player.name).toList(), onFilter: _onFilter),
+                  child: SearchBar2(items: _users.map((player) => player.name).toList(), onFilter: _onFilter),
                 ),
                 const SizedBox(width: 10),
                 FilledButton(
@@ -468,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen>{
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Jugadores seleccionados ${_selectedPlayers.length}', 
+                Text('Jugadores seleccionados ${_selectedUsers.length}', 
                   style: TextStyle(
                     fontSize: 18.0, // Cambia este valor al tamaño que desees
                   ),
@@ -513,7 +625,7 @@ class _HomeScreenState extends State<HomeScreen>{
   }
 //Separar la lista de jugadores filtradoes en un metodo
   Widget _buildPlayerListView(){
-    if(_players.isEmpty){
+    if(_users.isEmpty){
       return Expanded(
         child: Center (
           child: Text(
@@ -523,43 +635,119 @@ class _HomeScreenState extends State<HomeScreen>{
         ),
       );
     }
+    // return Expanded(
+    //   child: ListView.builder(
+    //     itemCount: _filteredUsers.length, // Muestra los elementos filtrados
+    //     itemBuilder: (context, index) {
+    //       final player = _filteredUsers[index];
+    //       final isSelected = _selectedUsers.contains(player); // Verifica si el item está seleccionado
+    //       return Card(
+    //         child: ListTile(
+    //           leading: Icon (
+    //             isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
+    //             color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
+    //           ),
+    //           title: Text('${player.name} ${player.lastName}      Tel: ${player.phone}      Asiento: ${player.numberSeat}',
+    //           // title: Text('${player.name} ${player.lastName}      Tel: ${player.phone} ',
+    //             style: TextStyle(
+    //               fontSize: 20.0,
+    //             )),
+    //           // subtitle: Text('Asiento: ${player.numberSeat}',
+    //           //   style: new TextStyle(
+    //           //     fontSize: 20.0,
+    //           //   )),
+    //           trailing: Row(
+    //             mainAxisSize: MainAxisSize.min,
+    //             children: [
+    //               IconButton(
+    //                 icon: Icon(Icons.edit, color: Colors.blue),
+    //                 onPressed: () => _showDialogEditUser(player),
+    //               ),
+    //               IconButton(
+    //                 icon: Icon(Icons.delete, color: Colors.red),
+    //                 onPressed: () => _deleteUser(player),
+    //               ),
+    //             ],
+    //           ),
+    //           onTap: () => _onSelectPlayer(player), // Maneja la selección
+    //         ),
+    //       );
+    //     },
+    //   ),
+    // );
     return Expanded(
-      child: ListView.builder(
-        itemCount: _filteredPlayers.length, // Muestra los elementos filtrados
-        itemBuilder: (context, index) {
-          final player = _filteredPlayers[index];
-          final isSelected = _selectedPlayers.contains(player); // Verifica si el item está seleccionado
+      child: GridView.count(
+        crossAxisCount: 4,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+        childAspectRatio: 2.8,
+        children: _filteredUsers.map((player) {
+          final isSelected = _selectedUsers.contains(player);
           return Card(
-            child: ListTile(
-              leading: Icon (
-                isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
-                color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
+            margin: const EdgeInsets.all(2),
+            child: InkWell(
+              onTap: () => _onSelectPlayer(player),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Columna 1: Icono check
+                    Icon(
+                      isSelected ? Icons.check_circle : Icons.check_circle_outline,
+                      color: isSelected ? Colors.green : Colors.grey,
+                      size: 30,
+                    ),
+                    const SizedBox(width: 8),
+                    // Columna 2: Info del jugador
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${player.name} ${player.lastName}',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Tel: ${player.phone}',
+                            style: const TextStyle(fontSize: 16),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Asiento: ${player.numberSeat}',
+                            style: const TextStyle(fontSize: 16),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Columna 3: Iconos editar y borrar
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.blue, size: 22),
+                          onPressed: () => _showDialogEditUser(player),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red, size: 22),
+                          onPressed: () => _deleteUser(player),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
               ),
-              title: Text('${player.name} ${player.lastName}      Tel: ${player.phone}      Asiento: ${player.numberSeat}',
-                style: TextStyle(
-                  fontSize: 20.0,
-                )),
-              // subtitle: Text('Tel: ${player.phone}',
-              //   style: new TextStyle(
-              //     fontSize: 20.0,
-              //   )),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _showDialogEditUser(player),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteUser(player),
-                  ),
-                ],
-              ),
-              onTap: () => _onSelectPlayer(player), // Maneja la selección
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }
