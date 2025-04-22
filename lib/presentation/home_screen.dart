@@ -30,7 +30,7 @@ class HomeScreenState extends State<HomeScreen>{
   Set<User> _selectedUsers = {}; // Conjunto para almacenar los jugadores seleccionados
   bool _allSelected = false;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  Color? warningColor = Colors.yellow[400];
+  Color? warningColor = Colors.orange[300];
   Color? errorColor = Colors.red[300];
   Color? successColor = Colors.green[500];
   
@@ -322,11 +322,6 @@ class HomeScreenState extends State<HomeScreen>{
       final seat = user.numberSeat?.trim();
       if (phone.isEmpty) continue;
 
-       if (!phoneMap.containsKey(phone)) {
-        phoneMap[phone] = [];
-      }
-      phoneMap[phone]!.add(user);
-
       if(seat != null && seat.trim().isNotEmpty){
         if(seats.contains(seat)){
           showCustomSnackBar(context, 'De los jugadores seleccionados 2 tienen el mismo asiento', errorColor!);
@@ -338,6 +333,11 @@ class HomeScreenState extends State<HomeScreen>{
         _showMessageDialog('Asiento faltante', "El jugador ${user.name} ${user.lastName} no tiene número de asiento.");
         return false;
       }
+      if (!phoneMap.containsKey(phone)) {
+        phoneMap[phone] = [];
+      }
+      phoneMap[phone]!.add(user);
+
     }
     final duplicates = phoneMap.entries.where((e) => e.value.length > 1).toList();
   
