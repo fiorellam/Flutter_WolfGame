@@ -31,6 +31,7 @@ class _GameScreenState extends State<GameScreen> {
   List<Phase> dayPhases = [];
   List<Phase> nightPhases = [];
   int currentPhaseIndex = 0;
+  late Player? lastDeathByWolf;
   bool hasSheriffBeenSelected = false; //Controla si el sheriff ha sido seleccionado
   bool hasCupidoBeenSelected = false; //Controla si cupido ya paso su turno
   List<String> recordActions = ['DIA 1 ☀️'];
@@ -54,7 +55,7 @@ class _GameScreenState extends State<GameScreen> {
     //Filtrar fases por nivel seleccionado
     final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
     convertToWolf = (widget.selectedPlayers.length <= 8) ? 1 : (widget.selectedPlayers.length <= 15) ? 2 : 3;
-    potions = (widget.selectedPlayers.length <= 9) ? 1 : (widget.selectedPlayers.length <= 20) ? 2 : 3;
+    potions = (widget.selectedPlayers.length <= 9) ? 1 : (widget.selectedPlayers.length <= 20) ? 3 : 2;
 
     setState(() {
       dayPhases = levelPhases.dia.cast<Phase>();
@@ -74,9 +75,9 @@ class _GameScreenState extends State<GameScreen> {
     setState((){
       Player? selectedPlayer; 
       selectedPlayer = widget.selectedPlayers.firstWhere(
-      (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto'));
+        (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto') || (player.phoneFlechado == lastDeathByWolf?.phone && player.state == 'Muerto') || (player.phone == lastDeathByWolf?.phone && player.state == 'Muerto'));
 
-      print(selectedPlayer);
+      showCustomSnackBar(context, "el jugador que se va a salvar por pocion es ${selectedPlayer.role} - ${selectedPlayer.state}");
       if (selectedPlayer.secondaryRol == 'Sheriff'){
         potionSheriff = false;
         selectedPlayer.state = 'Vivo';
@@ -86,6 +87,10 @@ class _GameScreenState extends State<GameScreen> {
           potionAyudante = false;
           selectedPlayer.state = 'Vivo';
           _generateRecord('El ayudante ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse');
+        } else {
+          potionPueblo = false;
+          selectedPlayer.state = 'Vivo';
+          _generateRecord('El pueblo decidió salvar a ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} por medio de la poción');
         }
       }
     });
@@ -119,6 +124,21 @@ class _GameScreenState extends State<GameScreen> {
       }
     }
   }
+  void showCustomSnackBar(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(color: Colors.white, fontSize: 18),
+      ),
+      backgroundColor: Colors.blue,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.only(bottom: 40, left: 20, right: 20), 
+      duration: const Duration(seconds: 3),
+    ),
+  );
+}
   void _goToNextPhase() {
      setState(() {
       // Obtener las fases actuales (día o noche)
@@ -148,23 +168,24 @@ class _GameScreenState extends State<GameScreen> {
         try{
         // Buscar el primer jugador con estado 'Seleccionado'
           selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.state == 'Seleccionado');
-          if (selectedPlayer.flechado != null){
+          if (selectedPlayer.phoneFlechado != null){
             selectedPlayer2 = widget.selectedPlayers.firstWhere(
-            (player) => selectedPlayer?.phone == player.flechado);
+            (player) => selectedPlayer?.phone == player.phoneFlechado);
           }
         } catch (e) {
           selectedPlayer = null;
         }
 
+        /*
         existeSheriff = widget.selectedPlayers.firstWhere(
         (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Vivo') || (player.secondaryRol == 'Ayudante' && player.state == 'Vivo'),);
         
         if (existeSheriff.state == 'Vivo' && selectedPlayer?.state == 'Seleccionado' && (selectedPlayer2?.protegidoActivo == null || selectedPlayer?.protegidoActivo == null) && potionPueblo == true){
           _turnSheriff();
         }
-
+        */
         if(selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true){
-          if(selectedPlayer?.flechado != null){
+          if(selectedPlayer?.phoneFlechado != null){
             setState(() {
               selectedPlayer?.state = 'Vivo';
               selectedPlayer2?.state = 'Vivo';
@@ -179,16 +200,18 @@ class _GameScreenState extends State<GameScreen> {
         } else{
           // Asignar el estado 'Muerto' si se encontró un jugador
           if (selectedPlayer != null) {
-            if(selectedPlayer.flechado == null) {
+            if(selectedPlayer.phoneFlechado == null) {
               //if (selectedPlayer.rol != 'Lobo')
               setState(() {
                 selectedPlayer?.state = 'Muerto';
+                lastDeathByWolf = selectedPlayer;
                 _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
               });
             } else {
               setState(() {
                 selectedPlayer?.state = 'Muerto';
                 selectedPlayer2?.state = 'Muerto';
+                lastDeathByWolf = selectedPlayer;
                 _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}');
               });
             }
@@ -344,9 +367,9 @@ class _GameScreenState extends State<GameScreen> {
     Player? selectedPlayer = _getPlayerByState('Seleccionado'); // Jugador seleccionado actualmente
     Player? selectedPlayer2;
     
-    if (selectedPlayer != null && selectedPlayer.flechado != null){
+    if (selectedPlayer != null && selectedPlayer.phoneFlechado != null){
       try{
-        selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer.phone == player.flechado);
+        selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer.phone == player.phoneFlechado);
       } catch (e) {
         selectedPlayer2 = null;
       }
@@ -361,7 +384,7 @@ class _GameScreenState extends State<GameScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                if(selectedPlayer?.flechado == null) {
+                if(selectedPlayer?.phoneFlechado == null) {
                   //if (selectedPlayer.rol != 'Lobo')
                   setState(() {
                     _generateRecord('No se uso la poción para salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}');
@@ -442,7 +465,7 @@ class _GameScreenState extends State<GameScreen> {
                   items: widget.selectedPlayers
                     .where((player) => player.state?.toLowerCase() != 'muerto' && player.protegidoActivo != true) // Excluir jugadores Muertos
                     .map((player) {
-                    return DropdownMenuItem<Player>(value: player, child: Text("${player.name} ${player.lastName}"));}).toList(),
+                    return DropdownMenuItem<Player>(value: player, child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"));}).toList(),
                   onChanged: (Player? newValue) {
                     setState(() {
                       selectedPlayer = newValue;
@@ -472,14 +495,14 @@ class _GameScreenState extends State<GameScreen> {
                 /*revisoSheriff = widget.selectedPlayers.firstWhere(
                   (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Vivo') || (player.secondaryRol == 'Ayudante' && player.state == 'Vivo'),);
                 */
-                if (selectedPlayer?.flechado != null && selectedPlayer2 != null){
+                if (selectedPlayer?.phoneFlechado != null && selectedPlayer2 != null){
                   if(selectedPlayer2 == null){ //Si no eligen a nadie en la asamblea
                     setState((){
                       _generateRecord('En la asamblea no se eligió a nadie');
                       Navigator.of(context).pop();
                     });
                   }
-                  selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer?.phone == player.flechado);
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer?.phone == player.phoneFlechado);
                   
                   if ((selectedPlayer2?.protegidoActivo == true)){
                     setState((){
@@ -534,9 +557,9 @@ class _GameScreenState extends State<GameScreen> {
         (player) => player == playerSelectedToKill,
         //  Maneja el caso si no se encuentra el jugador
       );
-      if (playerSelectedToKill.flechado != null && playerSelectedToKill.protegidoActivo != true) {
+      if (playerSelectedToKill.phoneFlechado != null && playerSelectedToKill.protegidoActivo != true) {
         selectedPlayer2 = widget.selectedPlayers.firstWhere(
-        (player) => playerSelectedToKill.phone == playerToUpdate.flechado);
+        (player) => playerSelectedToKill.phone == playerToUpdate.phoneFlechado);
         if (selectedPlayer2.protegidoActivo == true){
           setState(() {
             _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} pero esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}');
@@ -853,8 +876,8 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  selectedPlayer1?.flechado = selectedPlayer2?.phone;
-                  selectedPlayer2?.flechado = selectedPlayer1?.phone;
+                  selectedPlayer1?.phoneFlechado = selectedPlayer2?.phone;
+                  selectedPlayer2?.phoneFlechado = selectedPlayer1?.phone;
                   Navigator.of(context).pop();
                 });
                 _generateRecord("Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}");
@@ -974,9 +997,9 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
-                if (selectedPlayer?.flechado != null){
+                if (selectedPlayer?.phoneFlechado != null){
                   selectedPlayer2 = widget.selectedPlayers.firstWhere(
-                  (player) => selectedPlayer?.phone == player.flechado);
+                  (player) => selectedPlayer?.phone == player.phoneFlechado);
                 }
                 //optimizar este bloque
                 //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
@@ -986,7 +1009,7 @@ class _GameScreenState extends State<GameScreen> {
                     Navigator.of(context).pop();
                   });
                 } else{
-                  if (selectedPlayer?.flechado != null && selectedPlayer?.role == 'Lobo'){
+                  if (selectedPlayer?.phoneFlechado != null && selectedPlayer?.role == 'Lobo'){
                     setState(() {
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
@@ -1149,7 +1172,7 @@ class _GameScreenState extends State<GameScreen> {
                     label: Text('Sheriff', style: TextStyle(fontSize: fontSize)),
                   ),
                   FilledButton.icon(
-                    onPressed: (){},
+                    onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: (potions >= 2 && potionPueblo == true) ? Colors.blue : Colors.grey,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
