@@ -72,28 +72,50 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _updatePotions(){
-    setState((){
-      Player? selectedPlayer; 
-      selectedPlayer = widget.selectedPlayers.firstWhere(
-        (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto') || (player.phoneFlechado == lastDeathByWolf?.phone && player.state == 'Muerto') || (player.phone == lastDeathByWolf?.phone && player.state == 'Muerto'));
+    Player? selectedPlayer;
+    Player? selectedPlayer2;
+    selectedPlayer = widget.selectedPlayers.firstWhere(
+      (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto') || (player.phoneFlechado == lastDeathByWolf?.phone && player.state == 'Muerto') || (player.phone == lastDeathByWolf?.phone && player.state == 'Muerto'));
 
-      showCustomSnackBar(context, "el jugador que se va a salvar por pocion es ${selectedPlayer.role} - ${selectedPlayer.state}");
-      if (selectedPlayer.secondaryRol == 'Sheriff'){
+    //aqui verificamos si efectivamente existe
+    if(selectedPlayer.phoneFlechado != null){
+      try {
+        selectedPlayer2 = widget.selectedPlayers.firstWhere(
+          (player) => (player.phone == selectedPlayer?.phone));
+      } catch (e){
+        selectedPlayer2 = null;
+      }
+    }
+    if (selectedPlayer.secondaryRol == 'Sheriff'){
+      setState((){
         potionSheriff = false;
-        selectedPlayer.state = 'Vivo';
-        _generateRecord('El Sheriff ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse');
-      } else {
-        if (selectedPlayer.secondaryRol == 'Ayudante'){
+        selectedPlayer?.state = 'Vivo';
+        _generateRecord('El Sheriff ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} uso la poción para salvarse');
+      });
+    } else {
+      if (selectedPlayer.secondaryRol == 'Ayudante'){
+        setState((){
           potionAyudante = false;
-          selectedPlayer.state = 'Vivo';
-          _generateRecord('El ayudante ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} uso la poción para salvarse');
+          selectedPlayer?.state = 'Vivo';
+          _generateRecord('El ayudante ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} uso la poción para salvarse');
+        });
+      } else {
+        if(selectedPlayer2 != null){
+          setState((){
+            potionPueblo = false;
+            selectedPlayer?.state = 'Vivo';
+            selectedPlayer2?.state = 'Vivo';
+            _generateRecord('El pueblo decidió salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} por medio de la poción y además salvan a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} que esta enamorado');
+          });
         } else {
-          potionPueblo = false;
-          selectedPlayer.state = 'Vivo';
-          _generateRecord('El pueblo decidió salvar a ${selectedPlayer.role} - ${selectedPlayer.name} ${selectedPlayer.lastName} por medio de la poción');
+          setState((){
+            potionPueblo = false;
+            selectedPlayer?.state = 'Vivo';
+            _generateRecord('El pueblo decidió salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} por medio de la poción');
+          });
         }
       }
-    });
+    }
   }
 
   void _updateGameState(List<Phase> currentPhases) {
@@ -125,20 +147,20 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
   void showCustomSnackBar(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        message,
-        style: const TextStyle(color: Colors.white, fontSize: 18),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+        ),
+        backgroundColor: Colors.blue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.only(bottom: 40, left: 20, right: 20), 
+        duration: const Duration(seconds: 3),
       ),
-      backgroundColor: Colors.blue,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.only(bottom: 40, left: 20, right: 20), 
-      duration: const Duration(seconds: 3),
-    ),
-  );
-}
+    );
+  }
   void _goToNextPhase() {
      setState(() {
       // Obtener las fases actuales (día o noche)
@@ -164,7 +186,7 @@ class _GameScreenState extends State<GameScreen> {
       if (isDay && dayPhases[currentPhaseIndex].name == 'Asamblea') {
         Player? selectedPlayer; 
         Player? selectedPlayer2;
-        Player? existeSheriff;
+        //Player? existeSheriff;
         try{
         // Buscar el primer jugador con estado 'Seleccionado'
           selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.state == 'Seleccionado');
