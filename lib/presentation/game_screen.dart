@@ -65,10 +65,10 @@ class _GameScreenState extends State<GameScreen> {
     });
 
     // Turno para Cupido
-    if (isDay && levelPhases.level != 'Principiante' && !hasCupidoBeenSelected) {
+    /*if (isDay && levelPhases.level != 'Principiante' && !hasCupidoBeenSelected) {
       _turnCupido();
       hasCupidoBeenSelected = true;
-    }
+    }*/
   }
 
   void _updatePotions(){
@@ -990,6 +990,7 @@ class _GameScreenState extends State<GameScreen> {
                 setState(() {
                   selectedPlayer1?.phoneFlechado = selectedPlayer2?.phone;
                   selectedPlayer2?.phoneFlechado = selectedPlayer1?.phone;
+                  hasCupidoBeenSelected = true;
                   Navigator.of(context).pop();
                 });
                 _generateRecord("Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}");
@@ -1235,19 +1236,19 @@ class _GameScreenState extends State<GameScreen> {
     }
 }
   Future<void> sendSMSMessagesToAll(List<Player> players) async {
-  for (var player in players) {
-    final String phone = player.phone;
-    final String message = Uri.encodeFull('Noche del lobo! Tu rol es: ${player.role}');
-    final String smsUrl = 'sms:$phone?body=$message';
+    for (var player in players) {
+      final String phone = player.phone;
+      final String message = Uri.encodeFull('Noche del lobo! Tu rol es: ${player.role}');
+      final String smsUrl = 'sms:$phone?body=$message';
 
-    if (await canLaunch(smsUrl)) {
-      await launch(smsUrl);
-    } else {
-      print('No se pudo enviar SMS a: $phone');
+      if (await canLaunch(smsUrl)) {
+        await launch(smsUrl);
+      } else {
+        print('No se pudo enviar SMS a: $phone');
+      }
+      await Future.delayed(Duration(seconds: 2)); // Pausa entre mensajes
     }
-    await Future.delayed(Duration(seconds: 2)); // Pausa entre mensajes
   }
-}
 
   Future<bool> _confirmExit() async{
       return await showDialog(
@@ -1271,6 +1272,8 @@ class _GameScreenState extends State<GameScreen> {
  @override
   Widget build(BuildContext context) {
     double fontSize = 17;
+    //List<PhasesByLevel> phases = loadPhases();
+    //final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
     return WillPopScope(
       onWillPop: () => _confirmExit(), // Llamamos a la función
       child: Scaffold(
@@ -1294,7 +1297,21 @@ class _GameScreenState extends State<GameScreen> {
                       child: Text('Estado: ${isDay? '☀️' : '🌙'}', style: TextStyle(fontSize: fontSize),),
                     ),
                   ),
-                  
+                  /*// Turno para Cupido
+                  if (isDay && levelPhases.level != 'Principiante' && !hasCupidoBeenSelected) {
+                    _turnCupido();
+                    hasCupidoBeenSelected = true;
+                  }*/
+                  FilledButton.icon(
+                    onPressed: _turnCupido,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: (isDay && !hasCupidoBeenSelected) ? const Color.fromARGB(255, 255, 71, 132) : Colors.grey,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
+                      padding: const EdgeInsets.all(10),
+                    ),
+                    icon: Icon(Icons.science_outlined),
+                    label: Text('Cupido', style: TextStyle(fontSize: fontSize)),
+                  ),
                   FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
