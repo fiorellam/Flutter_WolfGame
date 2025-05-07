@@ -105,13 +105,13 @@ class _GameScreenState extends State<GameScreen> {
             potionPueblo = false;
             selectedPlayer?.state = 'Vivo';
             selectedPlayer2?.state = 'Vivo';
-            _generateRecord('El pueblo decidió salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} por medio de la poción y además salvan a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} que esta enamorado');
+            _generateRecord('El pueblo decidió salvar por medio de la poción a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} y además salvan a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} que esta enamorado');
           });
         } else {
           setState((){
             potionPueblo = false;
             selectedPlayer?.state = 'Vivo';
-            _generateRecord('El pueblo decidió salvar a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} por medio de la poción');
+            _generateRecord('El pueblo decidió salvar por medio de la poción a ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName}');
           });
         }
       }
@@ -216,7 +216,7 @@ class _GameScreenState extends State<GameScreen> {
           } else {
             setState(() {
               selectedPlayer?.state = 'Vivo';
-              _generateRecord('Se salvo ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+              _generateRecord('Se salvó ${selectedPlayer?.role} - ${selectedPlayer?.name}');
             });
           }
         } else{
@@ -302,18 +302,20 @@ class _GameScreenState extends State<GameScreen> {
   void _editItem(int index, Player player) {
     // final secondaryRolController = DropdownButtonFormField(items: items, onChanged: onChanged);
     // final stateController = TextEditingController(text: player.state);
+    final secondaryRolController = TextEditingController(text: player.secondaryRol);    
     final numberSeatController = TextEditingController(text: player.numberSeat);
     final roleController = TextEditingController(text: player.role);
     final phoneController = TextEditingController(text: player.phone);
 
     String selectedSecondaryRole = player.secondaryRol ?? '';
     String selectedStatePlayer = player.state ?? '';
-    final List<String> secondaryRoles = ['Sheriff', 'Ayudante'];
+    // final List<String?> secondaryRoles = ['Sheriff', 'Ayudante', null];
     final List<String> states = ['Vivo', 'Muerto', 'Seleccionado'];
 
 
     showDialog(
       context: context,
+      barrierColor: Colors.black,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -324,21 +326,21 @@ class _GameScreenState extends State<GameScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(controller: roleController,decoration: const InputDecoration(labelText: 'Rol Principal'),),
-                     DropdownButtonFormField<String>(
-                        value: selectedSecondaryRole.isNotEmpty ? selectedSecondaryRole : null,
-                        decoration: const InputDecoration(labelText: 'Rol Secundario'),
-                        items: secondaryRoles.map((role) {
-                          return DropdownMenuItem(value: role, child: Text(role));
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setModalState(() {
-                              selectedSecondaryRole = value;
-                            });
-                          }
-                        },
-                      ),
-                    // TextField(controller: secondaryRolController,decoration: const InputDecoration(labelText: 'Rol Secundario'),),
+                    //  DropdownButtonFormField<String>(
+                    //     value: selectedSecondaryRole.isNotEmpty ? selectedSecondaryRole : null,
+                    //     decoration: const InputDecoration(labelText: 'Rol Secundario'),
+                    //     items: secondaryRoles.map((role) {
+                    //       return DropdownMenuItem(value: role, child: Text(role?? 'Sin rol secundario'));
+                    //     }).toList(),
+                    //     onChanged: (value) {
+                    //       if (value != null) {
+                    //         setModalState(() {
+                    //           selectedSecondaryRole = value;
+                    //         });
+                    //       }
+                    //     },
+                    //   ),
+                    TextField(controller: secondaryRolController,decoration: const InputDecoration(labelText: 'Rol Secundario'),),
                     // TextField(controller: stateController,decoration: const InputDecoration(labelText: 'Estado'),),
                     DropdownButtonFormField(
                       value: selectedStatePlayer.isNotEmpty ? selectedStatePlayer : null,
@@ -364,6 +366,7 @@ class _GameScreenState extends State<GameScreen> {
                       player.state = selectedStatePlayer;
                       player.numberSeat = numberSeatController.text;
                       player.role = roleController.text;
+                      player.secondaryRol = secondaryRolController.text;
                       player.phone = phoneController.text;
                     });
                     Navigator.of(context).pop();
@@ -460,7 +463,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Cuenta Regresiva"),
+          title: Row (
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Cuenta Regresiva"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               // Iniciar el temporizador
@@ -596,7 +610,7 @@ class _GameScreenState extends State<GameScreen> {
       } else{
         if (playerToUpdate.protegidoActivo == true) {
           setState((){
-            _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido por lo cual no se pudo matar');
+            _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido, NO SE PUDO MATAR');
           });
         } else {
           setState(() {
@@ -639,7 +653,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Lobos"),
+          title: Row (
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Lobos"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),  
+            ],
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               
@@ -694,7 +719,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Curandero"),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Curandero"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               
@@ -758,6 +794,38 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  void _showPlayers(){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Jugadores'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: widget.selectedPlayers.map((player) {
+                return Container(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                  color: player.state?.toLowerCase() == "vivo" ? const Color.fromARGB(147, 49, 220, 98) : player.state?.toLowerCase() == "muerto" ? Colors.red.shade300 : const Color.fromARGB(136, 229, 255, 0),
+                  borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ListTile(
+                    title: Text('${player.numberSeat} - ${player.role} - ${player.name} ${player.lastName} - ${player.state} - Rol Secundario: ${player.secondaryRol} '),
+                    // subtitle: Text('- Rol Secundario: ${player.secondaryRol}'),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () {Navigator.of(context).pop();}, child: const Text('Cerrar')),
+          ],
+        );
+      },
+    );
+  }
+
   //Modal Protector
   void _turnProtector(int numSize) {
 
@@ -768,7 +836,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Protector"),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Protector"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               
@@ -847,7 +926,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Cupido"),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Cupido"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               
@@ -922,7 +1012,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Vidente"),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Vidente"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               
@@ -980,7 +1081,18 @@ class _GameScreenState extends State<GameScreen> {
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
         return AlertDialog(
-          title: const Text("Bruja"),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Bruja"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               
@@ -1027,7 +1139,7 @@ class _GameScreenState extends State<GameScreen> {
                 //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
                 if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
                   setState((){
-                    _generateRecord('Bruja descubrio a ${selectedPlayer?.role} - ${selectedPlayer?.name} pero no lo mato porque esta protegido');
+                    _generateRecord('Bruja descubrió pero no lo pudo matar porque esta protegido: ${selectedPlayer?.role} - ${selectedPlayer?.name}');
                     Navigator.of(context).pop();
                   });
                 } else{
@@ -1035,14 +1147,14 @@ class _GameScreenState extends State<GameScreen> {
                     setState(() {
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
-                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mato a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
+                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mató a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
                       Navigator.of(context).pop();
                     });
                   } else {
                     if (selectedPlayer?.role == 'Lobo'){
                       setState(() {
                         selectedPlayer?.state = 'Muerto';
-                        _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y lo mato');
+                        _generateRecord('Bruja descubrió y mató a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
                         Navigator.of(context).pop();
                       });
                     }
