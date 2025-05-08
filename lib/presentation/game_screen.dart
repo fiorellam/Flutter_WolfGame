@@ -256,24 +256,27 @@ class _GameScreenState extends State<GameScreen> {
 
       // Turno para Protector
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Protector') {
-        //for (var i = 0; i < 2; i++){
-        Player? selectedPlayer;
-        //para saber la longitud
-        final sizeProtector = widget.selectedPlayers
-          .where((player) => player.state == 'Vivo' && player.role == 'Protector')
-          .length;
-        try{
-          // Buscar el primer jugador con estado 'Seleccionado'
-          selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.protegidoActivo == true,);
-          setState((){
-            selectedPlayer?.protegidoActivo = false;
-          });
-        } catch (e) {
-          selectedPlayer = null;
+        List<Player> protector = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Protector'));
+        if(protector.isNotEmpty && protector[0].state != 'Muerto'){
+          //for (var i = 0; i < 2; i++){
+          Player? selectedPlayer;
+          //para saber la longitud
+          final sizeProtector = widget.selectedPlayers
+            .where((player) => player.state == 'Vivo' && player.role == 'Protector')
+            .length;
+          try{
+            // Buscar el primer jugador con estado 'Seleccionado'
+            selectedPlayer = widget.selectedPlayers.firstWhere((player) => player.protegidoActivo == true,);
+            setState((){
+              selectedPlayer?.protegidoActivo = false;
+            });
+          } catch (e) {
+            selectedPlayer = null;
+          }
+          print('Longitud de Protector $sizeProtector');
+          _turnProtector(sizeProtector);
+          //}
         }
-        print('Longitud de Protector $sizeProtector');
-        _turnProtector(sizeProtector);
-        //}
       }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Lobo') {
@@ -285,16 +288,21 @@ class _GameScreenState extends State<GameScreen> {
         if(curanderos.isNotEmpty && curanderos[0].state != 'Muerto'){
             // Aquí colocas el código para realizar la acción de curar, si es necesario
           _turnCurandero();
-        } else {
         }
       }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Vidente') {
-        _turnVidente();
+        List<Player> videntes = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Vidente'));
+        if(videntes.isNotEmpty && videntes[0].state != 'Muerto'){
+          _turnVidente();
+        }
       }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Bruja') {
-        _turnBruja();
+        List<Player> bruja = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Bruja'));
+        if(bruja.isNotEmpty && bruja[0].state != 'Muerto'){
+          _turnBruja();
+        }
       }
     });
   }
