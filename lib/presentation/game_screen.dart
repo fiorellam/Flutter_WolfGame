@@ -643,6 +643,75 @@ class _GameScreenState extends State<GameScreen> {
       );
     }
   }
+  //   void _randomPlayerToKill(){
+  //   //Filtrar jugadores vivos
+  //   List<Player> playersAlive = _getPlayersStillAlive();
+  //   Player? selectedPlayer2; 
+  //   if(playersAlive.isNotEmpty){
+  //     Random random = Random();
+  //     int indexAleatorio = random.nextInt(playersAlive.length);
+
+  //     //TODO: Falta que solo se puedan seleccionar jugadores que sigan vivos
+  //     //Obtener player al azar
+  //     Player playerSelectedToKill = playersAlive[indexAleatorio];
+  //     Player playerToUpdate = widget.selectedPlayers.firstWhere(
+  //       (player) => player == playerSelectedToKill,
+  //       //  Maneja el caso si no se encuentra el jugador
+  //     );
+  //     // if (playerSelectedToKill.phoneFlechado != null && playerSelectedToKill.protegidoActivo != true) {
+  //     if(playerSelectedToKill.phoneFlechado != null && playerSelectedToKill.phoneFlechado != '' ){ //Si el seleccionado para matar esta flechado buscamos al otro flechado
+  //     Player player2Flechado = widget.selectedPlayers.firstWhere((player) => player.phoneFlechado == playerSelectedToKill.phoneFlechado);
+
+  //     if(player2Flechado.protegidoActivo == false && playerSelectedToKill.protegidoActivo == false ){
+  //       setState(() {
+  //         playerSelectedToKill.state = 'Muerto';
+  //         player2Flechado.state = 'Muerto';
+  //       });
+
+  //     }
+  //       selectedPlayer2 = widget.selectedPlayers.firstWhere(
+  //       (player) => playerSelectedToKill.phone == playerToUpdate.phoneFlechado);
+  //       if (selectedPlayer2.protegidoActivo == true){
+  //         setState(() {
+  //           _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} pero esta protegido por ${selectedPlayer2?.role} - ${selectedPlayer2?.name}');
+  //         });
+  //       } else {
+  //         setState(() {
+  //           playerSelectedToKill.state = 'Muerto';
+  //         player2Flechado.state = 'Muerto';
+  //           // playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
+  //           // selectedPlayer2?.state = "Muerto"; // Cambiar el estado a "muerto"
+  //           _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name} el cual estaba flechado');
+  //         });
+  //       }
+  //     } else{
+  //       if (playerToUpdate.protegidoActivo == true) {
+  //         setState((){
+  //           _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}, pero esta protegido, NO SE PUDO MATAR');
+  //         });
+  //       } else {
+  //         setState(() {
+  //           playerToUpdate.state = "Muerto"; // Cambiar el estado a "muerto"
+  //           _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}');
+  //         });
+  //       }
+  //     }
+  //   }
+  //   else{
+  //     showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('Mensaje Importante'),
+  //         content: Text('Ya no hay mas jugadores para matar'),
+  //         actions: <Widget>[
+  //           TextButton(onPressed: () {Navigator.of(context).pop();},child: Text('Cerrar'),),
+  //         ],
+  //       );
+  //     },
+  //     );
+  //   }
+  // }
 
   void _generateRecord(String message){
     recordActions.add(message);
@@ -1317,7 +1386,7 @@ class _GameScreenState extends State<GameScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
-                    icon: Icon(Icons.science_outlined),
+                    icon: Icon(Icons.favorite),
                     label: Text('Cupido', style: TextStyle(fontSize: fontSize)),
                   ),
                   FilledButton.icon(
@@ -1422,6 +1491,7 @@ class _GameScreenState extends State<GameScreen> {
                   Expanded(child: Text(player.role,style: TextStyle(fontSize: 20.0,))),
                   Expanded(child: Text(player.secondaryRol ?? '',style: TextStyle(fontSize: 20.0,))),
                   Expanded(child: Text(player.state ?? '',style: TextStyle(fontSize: 20.0,))),
+                  Expanded(child: Text(player.phoneFlechado!= null? '💘': '',style: TextStyle(fontSize: 20.0,))),
                   SizedBox(
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas
