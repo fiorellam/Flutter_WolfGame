@@ -649,7 +649,6 @@ class _GameScreenState extends State<GameScreen> {
   }
   //Modal lobos
   void _turnLobos() {
-
     Player? selectedPlayer; // Jugador seleccionado actualmente
 
     showDialog(
@@ -678,8 +677,7 @@ class _GameScreenState extends State<GameScreen> {
                     player.protegidoActivo != true)
                 .toList();
             filteredAndSortedPlayers.sort(
-                (a, b) => a.numberSeat!.compareTo(b.numberSeat!));
-              
+                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -688,7 +686,6 @@ class _GameScreenState extends State<GameScreen> {
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
                   items: filteredAndSortedPlayers
-                    
                     .map<DropdownMenuItem<Player>>((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
@@ -745,30 +742,31 @@ class _GameScreenState extends State<GameScreen> {
           ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione un jugador"),
-                  value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => player.curado != 2 && player.state != 'Muerto') // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer = newValue;
-                    });
-                  },
-                ),
-              ],
-            );
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.curado != 2 && player.state != 'Muerto').toList();
+                filteredAndSortedPlayers.sort((player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Dropdown para seleccionar jugador
+                    DropdownButton<Player>(
+                      hint: const Text("Seleccione un jugador"),
+                      value: selectedPlayer,
+                      items: filteredAndSortedPlayers
+                        .map<DropdownMenuItem<Player>>((player) {
+                        return DropdownMenuItem<Player>(
+                          value: player,
+                          child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                        );
+                      }).toList(),
+                      onChanged: (Player? newValue) {
+                        setState(() {
+                          selectedPlayer = newValue;
+                        });
+                      },
+                    ),
+                  ],
+                );
             },
           ),
           actions: [
@@ -840,7 +838,6 @@ class _GameScreenState extends State<GameScreen> {
 
   //Modal Protector
   void _turnProtector(int numSize) {
-
     Player? selectedPlayer; // Jugador seleccionado actualmente
 
     showDialog(
@@ -862,30 +859,33 @@ class _GameScreenState extends State<GameScreen> {
           ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.protegido != 2 && player.state?.toLowerCase() != 'muerto').toList(); // Excluir jugadores Muertos
+                filteredAndSortedPlayers.sort(
+                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
               
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione un jugador"),
-                  value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => player.protegido != 2 && player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer = newValue;
-                    });
-                  },
-                ),
-              ],
-            );
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown para seleccionar jugador
+                  DropdownButton<Player>(
+                    hint: const Text("Seleccione un jugador"),
+                    value: selectedPlayer,
+                    items: filteredAndSortedPlayers
+                      .map<DropdownMenuItem<Player>>((player) {
+                      return DropdownMenuItem<Player>(
+                        value: player,
+                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                      );
+                    }).toList(),
+                    onChanged: (Player? newValue) {
+                      setState(() {
+                        selectedPlayer = newValue;
+                      });
+                    },
+                  ),
+                ],
+              );
             },
           ),
           actions: [
@@ -1041,7 +1041,6 @@ class _GameScreenState extends State<GameScreen> {
 
   //Modal Vidente
   void _turnVidente() {
-
     Player? selectedPlayer; // Jugador seleccionado actualmente
 
     showDialog(
@@ -1063,6 +1062,11 @@ class _GameScreenState extends State<GameScreen> {
           ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.state?.toLowerCase() != 'muerto').toList(); // Excluir jugadores Muertos
+
+              filteredAndSortedPlayers.sort(
+              (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
               
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -1071,9 +1075,8 @@ class _GameScreenState extends State<GameScreen> {
                 DropdownButton<Player>(
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
-                    .map((player) {
+                  items: filteredAndSortedPlayers
+                    .map<DropdownMenuItem<Player>>((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
                       child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
@@ -1109,7 +1112,6 @@ class _GameScreenState extends State<GameScreen> {
 
   //Modal Bruja
   void _turnBruja() {
-
     Player? selectedPlayer; // Jugador seleccionado actualmente
     Player? selectedPlayer2; // Jugador que esta relacionado con el anterior
 
@@ -1132,36 +1134,39 @@ class _GameScreenState extends State<GameScreen> {
           ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione un jugador"),
-                  value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => player.state?.toLowerCase() != 'muerto') // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer = newValue;
-                    });
-                  },
-                ),
-                Text(selectedPlayer != null ? 
-                      (selectedPlayer?.role == 'Lobo' ? 
-                          'El jugador que elegiste es: ${selectedPlayer?.role}' 
-                          :'No puedes saber el rol de este jugador')
-                      : 'Aun no seleccionas ningun jugador')
-              ],
-            );
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.state?.toLowerCase() != 'muerto').toList(); // Excluir jugadores Muertos
 
+                filteredAndSortedPlayers.sort(
+                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
+              
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown para seleccionar jugador
+                  DropdownButton<Player>(
+                    hint: const Text("Seleccione un jugador"),
+                    value: selectedPlayer,
+                    items: filteredAndSortedPlayers
+                      .map<DropdownMenuItem<Player>>((player) {
+                      return DropdownMenuItem<Player>(
+                        value: player,
+                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                      );
+                    }).toList(),
+                    onChanged: (Player? newValue) {
+                      setState(() {
+                        selectedPlayer = newValue;
+                      });
+                    },
+                  ),
+                  Text(selectedPlayer != null ? 
+                        (selectedPlayer?.role == 'Lobo' ? 
+                            'El jugador que elegiste es: ${selectedPlayer?.role}' 
+                            :'No puedes saber el rol de este jugador')
+                        : 'Aun no seleccionas ningun jugador')
+                ],
+              );
             },
           ),
           actions: [
