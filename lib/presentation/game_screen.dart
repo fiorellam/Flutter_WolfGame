@@ -671,6 +671,14 @@ class _GameScreenState extends State<GameScreen> {
           ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
+              // 1. Filtrar y ordenar jugadores antes del Dropdown
+            List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) =>
+                    player.state?.toLowerCase() != 'muerto' &&
+                    player.protegidoActivo != true)
+                .toList();
+            filteredAndSortedPlayers.sort(
+                (a, b) => a.numberSeat!.compareTo(b.numberSeat!));
               
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -679,9 +687,9 @@ class _GameScreenState extends State<GameScreen> {
                 DropdownButton<Player>(
                   hint: const Text("Seleccione un jugador"),
                   value: selectedPlayer,
-                  items: widget.selectedPlayers
-                    .where((player) => (player.state?.toLowerCase() != 'muerto' && player.protegidoActivo != true)) // Excluir jugadores Muertos
-                    .map((player) {
+                  items: filteredAndSortedPlayers
+                    
+                    .map<DropdownMenuItem<Player>>((player) {
                     return DropdownMenuItem<Player>(
                       value: player,
                       child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
@@ -992,13 +1000,33 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(
               onPressed: () {
                 if(selectedPlayer1 != null && selectedPlayer2 != null){
+                  //Verificar que no sean el mismo jugador
+                  if (selectedPlayer1 == selectedPlayer2) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("No puedes seleccionar al mismo jugador dos veces."))
+                    );
+                    return;
+                  }
+                  String phonePlayer1 = selectedPlayer1!.phone.trim();
+                  String phonePlayer2 = selectedPlayer2!.phone.trim();
+                  if(phonePlayer1.isEmpty && phonePlayer2.isEmpty){
+                    selectedPlayer1?.phone = '1234';
+                    selectedPlayer2?.phone = '12345';
+                  }
+                  else if(phonePlayer1.isEmpty ){
+                    selectedPlayer1?.phone = '1234';
+                  }
+                  else if(phonePlayer2.isEmpty ){
+                    selectedPlayer2?.phone = '12345';
+                  } 
                   setState(() {
                     selectedPlayer1?.phoneFlechado = selectedPlayer2?.phone;
                     selectedPlayer2?.phoneFlechado = selectedPlayer1?.phone;
                     hasCupidoBeenSelected = true;
-                    Navigator.of(context).pop();
                   });
+                  Navigator.of(context).pop();
                   _generateRecord("Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}");
+                
                 } else {
                   Navigator.of(context).pop();
                 }
@@ -1431,7 +1459,7 @@ class _GameScreenState extends State<GameScreen> {
                       onPressed: () => _editItem(index, player),
                     ),
                   ),
-                  player.phone.trim().isNotEmpty ?
+                  player.phone.trim().isNotEmpty && (player.phone.trim() != '12345' && player.phone.trim() != '1234')?
                     SizedBox(
                       width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                       height: 35.0,  // Altura si lo necesitas
