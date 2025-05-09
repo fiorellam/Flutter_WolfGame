@@ -991,13 +991,17 @@ class _GameScreenState extends State<GameScreen> {
             TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
-                setState(() {
-                  selectedPlayer1?.phoneFlechado = selectedPlayer2?.phone;
-                  selectedPlayer2?.phoneFlechado = selectedPlayer1?.phone;
-                  hasCupidoBeenSelected = true;
+                if(selectedPlayer1 != null && selectedPlayer2 != null){
+                  setState(() {
+                    selectedPlayer1?.phoneFlechado = selectedPlayer2?.phone;
+                    selectedPlayer2?.phoneFlechado = selectedPlayer1?.phone;
+                    hasCupidoBeenSelected = true;
+                    Navigator.of(context).pop();
+                  });
+                  _generateRecord("Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}");
+                } else {
                   Navigator.of(context).pop();
-                });
-                _generateRecord("Cupido selecciono a ${selectedPlayer1?.role} - ${selectedPlayer1?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}");
+                }
               },
               child: const Text("Aceptar"),
             ),
