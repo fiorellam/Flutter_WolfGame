@@ -1247,7 +1247,29 @@ class _GameScreenState extends State<GameScreen> {
     final int seconds = (totalSeconds % 60).floor();
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
- 
+
+  bool shouldShowDeathIcon(){
+    // Verifica si estamos en una fase válida
+    if ((isDay && (dayPhases.isEmpty || currentPhaseIndex >= dayPhases.length)) ||
+        (!isDay && (nightPhases.isEmpty || currentPhaseIndex >= nightPhases.length))) {
+      return false; // No hay fase válida
+    }
+      String currentPhaseName = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
+
+      if(currentPhaseName == 'Bruja'){
+        return !widget.selectedPlayers.any((player) => player.role == 'Bruja' && (player.state == 'Vivo' || player.state == 'Seleccionado'));
+      } if(currentPhaseName == 'Lobo'){
+        return !widget.selectedPlayers.any((player) => player.role == 'Lobo' && (player.state == 'Vivo' || player.state == 'Seleccionado'));
+      } if(currentPhaseName == 'Vidente'){
+        return !widget.selectedPlayers.any((player) => player.role == 'Vidente' && (player.state == 'Vivo' || player.state == 'Seleccionado'));
+      } if(currentPhaseName == 'Curandero'){
+        return !widget.selectedPlayers.any((player) => player.role == 'Curandero' && (player.state == 'Vivo' || player.state == 'Seleccionado'));
+      } if(currentPhaseName == 'Protector'){
+        return !widget.selectedPlayers.any((player) => player.role == 'Protector' && (player.state == 'Vivo' || player.state == 'Seleccionado'));
+      } 
+      return false;
+  }
+
   Future <void> openWhatsApp({
     required String phone,
     String? text,
@@ -1391,7 +1413,7 @@ class _GameScreenState extends State<GameScreen> {
                     color: Colors.blue[700],
                     child: Padding(
                       padding: const EdgeInsets.all(10),
-                      child: Text("Estado Actual: $gameState", style: TextStyle(fontSize: fontSize)),
+                      child: Text("Estado Actual: $gameState ${shouldShowDeathIcon() ? '☠️' : ''}", style: TextStyle(fontSize: fontSize)),
                     ) ,
                   ),
                   //Boton siguiente fase
@@ -1403,7 +1425,7 @@ class _GameScreenState extends State<GameScreen> {
                       padding: const EdgeInsets.all(10),
                     ),
                     icon: Icon(Icons.arrow_forward_rounded),
-                    label: Text('Fase: $nextStatePhase' , style: TextStyle(fontSize: fontSize)),
+                    label: Text('Fase: $nextStatePhase ' , style: TextStyle(fontSize: fontSize)),
                   ),
                 ],
               ),
