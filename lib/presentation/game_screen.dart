@@ -952,47 +952,48 @@ class _GameScreenState extends State<GameScreen> {
           ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione primer jugador"),
-                  value: selectedPlayer1,
-                  items: widget.selectedPlayers
-                    .where((player) => player.protegido != 2) // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer1 = newValue;
-                    });
-                  },
-                ),
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione segundo jugador"),
-                  value: selectedPlayer2,
-                  items: widget.selectedPlayers
-                    .where((player) => player.protegido != 2) // Excluir jugadores Muertos
-                    .map((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer2 = newValue;
-                    });
-                  },
-                ),
-              ],
-            );
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.protegido != 2).toList();
+
+                filteredAndSortedPlayers.sort((player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown para seleccionar jugador
+                  DropdownButton<Player>(
+                    hint: const Text("Seleccione primer jugador"),
+                    value: selectedPlayer1,
+                    items: filteredAndSortedPlayers
+                      .map((player) {
+                      return DropdownMenuItem<Player>(
+                        value: player,
+                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                      );
+                    }).toList(),
+                    onChanged: (Player? newValue) {
+                      setState(() {
+                        selectedPlayer1 = newValue;
+                      });
+                    },
+                  ),
+                  DropdownButton<Player>(
+                    hint: const Text("Seleccione segundo jugador"),
+                    value: selectedPlayer2,
+                    items: filteredAndSortedPlayers
+                      .map((player) {
+                      return DropdownMenuItem<Player>(
+                        value: player,
+                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                      );
+                    }).toList(),
+                    onChanged: (Player? newValue) {
+                      setState(() {
+                        selectedPlayer2 = newValue;
+                      });
+                    },
+                  ),
+                ],
+              );
             },
           ),
           actions: [
