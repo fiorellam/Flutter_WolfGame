@@ -273,7 +273,7 @@ class _GameScreenState extends State<GameScreen> {
           } catch (e) {
             selectedPlayer = null;
           }
-          print('Longitud de Protector $sizeProtector');
+          // print('Longitud de Protector $sizeProtector');
           _turnProtector(sizeProtector);
           //}
         }
@@ -914,7 +914,7 @@ class _GameScreenState extends State<GameScreen> {
                   }
                 }
                 _generateRecord("Protector seleccionó a ${selectedPlayer?.role} - ${selectedPlayer?.name}");
-                print(numSize);
+                // print(numSize);
                 if(numSize > 1){
                   _turnProtector(numSize - 1);
                 }
@@ -1294,7 +1294,7 @@ class _GameScreenState extends State<GameScreen> {
       if (await canLaunchUrl(Uri.parse(url))) {
         await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       } else {
-        print('Error al abrir WhatsApp con el número: $phone');
+        // print('Error al abrir WhatsApp con el número: $phone');
       }
       await Future.delayed(Duration(seconds: 2)); // Pequeña pausa entre envíos
     }
@@ -1308,7 +1308,7 @@ class _GameScreenState extends State<GameScreen> {
       if (await canLaunch(smsUrl)) {
         await launch(smsUrl);
       } else {
-        print('No se pudo enviar SMS a: $phone');
+        // print('No se pudo enviar SMS a: $phone');
       }
       await Future.delayed(Duration(seconds: 2)); // Pausa entre mensajes
     }
@@ -1318,17 +1318,17 @@ class _GameScreenState extends State<GameScreen> {
       return await showDialog(
       context: context, 
       builder: (context) => AlertDialog(
-        title: Text("Deseas salir de la partida?"),
-        content: Text('¿Estás seguro que deseas salir? Se perderá la partida y los roles.'),
+        title: const Text("Deseas salir de la partida?"),
+        content: const Text('¿Estás seguro que deseas salir? Se perderá la partida y los roles.'),
         actions: [
           TextButton(
                 onPressed: () => Navigator.of(context).pop(false), // No salir
                 child: Text("Cancelar"),
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true), // Salir
-                child: Text("Salir"),
-              ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Salir
+            child: Text("Salir"),
+          ),
         ],
       )
     );    
@@ -1336,14 +1336,24 @@ class _GameScreenState extends State<GameScreen> {
  @override
   Widget build(BuildContext context) {
     double fontSize = 17;
+    int numberWolfAlive = widget.selectedPlayers.where((player) => player.role == 'Lobo' && (player.state == 'Vivo' || player.state == 'Seleccionado')).length;
+    int numberFarmerAlive = widget.selectedPlayers.where((player) => player.role != 'Lobo' && (player.state == 'Vivo' || player.state == 'Seleccionado')).length;
     //List<PhasesByLevel> phases = loadPhases();
     //final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
-    return WillPopScope(
-      onWillPop: () => _confirmExit(), // Llamamos a la función
+    return PopScope(
+      canPop: false, //Evita salir por defecto
+      onPopInvokedWithResult: (didPop, result) async{
+        if(didPop) return;
+        final shouldExit = await _confirmExit();
+        if (!context.mounted) return; // Seguridad: widget fue desmontado
+        if(shouldExit){
+          Navigator.of(context).pop(result);
+        }
+      }, // Llamamos a la función
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('JUEGO LOBO - ${widget.level} - Jugadores: ${widget.selectedPlayers.length}'),
+          title: Text('JUEGO LOBO - ${widget.level} - Jugadores: ${widget.selectedPlayers.length} - 🐺: $numberWolfAlive - 🧑‍🌾: $numberFarmerAlive'),
         ),
         body: Container(
           margin: const EdgeInsets.all(15.5), //16 px en todos los lados
@@ -1432,7 +1442,7 @@ class _GameScreenState extends State<GameScreen> {
               _buildPlayerListView(),
               
           // Aquí usamos un ListView para mostrar las acciones
-              Container(
+              SizedBox(
                 height: 130,
                 child: ListView.builder(
                   itemCount: recordActions.length,
