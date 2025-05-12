@@ -234,7 +234,7 @@ class _GameScreenState extends State<GameScreen> {
                 selectedPlayer?.state = 'Muerto';
                 selectedPlayer2?.state = 'Muerto';
                 lastDeathByWolf = selectedPlayer;
-                _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name}');
+                _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado');
               });
             }
           } else {
@@ -539,7 +539,11 @@ class _GameScreenState extends State<GameScreen> {
                 /*revisoSheriff = widget.selectedPlayers.firstWhere(
                   (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Vivo') || (player.secondaryRol == 'Ayudante' && player.state == 'Vivo'),);
                 */
-                selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer?.phone == player.phoneFlechado);
+                try {
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere((player) => selectedPlayer?.phone == player.phoneFlechado);
+                } catch (e){
+                  selectedPlayer2 = null;
+                }
                 if (selectedPlayer?.phoneFlechado != null && selectedPlayer2 != null){
                   if(selectedPlayer2 == null){ //Si no eligen a nadie en la asamblea
                     setState((){
