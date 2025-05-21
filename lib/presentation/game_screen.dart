@@ -74,26 +74,33 @@ class _GameScreenState extends State<GameScreen> {
   void _updatePotions(){
     Player? selectedPlayer;
     Player? selectedPlayer2;
-    selectedPlayer = widget.selectedPlayers.firstWhere(
-      (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto') || (player.phoneFlechado == lastDeathByWolf?.phone && player.state == 'Muerto') || (player.phone == lastDeathByWolf?.phone && player.state == 'Muerto'));
-
+    print('El que murio fue -> ${lastDeathByWolf?.name} ${lastDeathByWolf?.phoneFlechado}');
+    try{
+      selectedPlayer = widget.selectedPlayers.firstWhere(
+        (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto'));
+    } catch (e){
+      selectedPlayer = lastDeathByWolf;
+    }
+  
+    print('Existe el 1er jugador ${selectedPlayer?.name} - ${selectedPlayer?.phoneFlechado}');    
     //aqui verificamos si efectivamente existe
-    if(selectedPlayer.phoneFlechado != null){
+    if(selectedPlayer?.phoneFlechado != null){
       try {
         selectedPlayer2 = widget.selectedPlayers.firstWhere(
-          (player) => (player.phone == selectedPlayer?.phone));
+          (player) => (player.phone == selectedPlayer?.phoneFlechado));
+        print('Existe el 2do jugador ${selectedPlayer2.name} - ${selectedPlayer2.phoneFlechado}');
       } catch (e){
         selectedPlayer2 = null;
       }
     }
-    if (selectedPlayer.secondaryRol == 'Sheriff'){
+    if (selectedPlayer?.secondaryRol == 'Sheriff'){
       setState((){
         potionSheriff = false;
         selectedPlayer?.state = 'Vivo';
         _generateRecord('El Sheriff ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} uso la poción para salvarse');
       });
     } else {
-      if (selectedPlayer.secondaryRol == 'Ayudante'){
+      if (selectedPlayer?.secondaryRol == 'Ayudante'){
         setState((){
           potionAyudante = false;
           selectedPlayer?.state = 'Vivo';
@@ -562,6 +569,7 @@ class _GameScreenState extends State<GameScreen> {
                       _generateRecord('En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado');
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
+                      lastDeathByWolf = selectedPlayer;
                       Navigator.of(context).pop();
                     });
                   }
@@ -575,6 +583,7 @@ class _GameScreenState extends State<GameScreen> {
                     setState((){
                       _generateRecord('En la asamblea se eligió para matar a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
                       selectedPlayer?.state = 'Muerto';
+                      lastDeathByWolf = selectedPlayer;
                       Navigator.of(context).pop();
                     });
                   }
