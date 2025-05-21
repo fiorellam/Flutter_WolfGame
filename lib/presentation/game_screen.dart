@@ -74,25 +74,24 @@ class _GameScreenState extends State<GameScreen> {
   void _updatePotions(){
     Player? selectedPlayer;
     Player? selectedPlayer2;
-    print('El que murio fue -> ${lastDeathByWolf?.name} ${lastDeathByWolf?.phoneFlechado}');
+
     try{
       selectedPlayer = widget.selectedPlayers.firstWhere(
         (player) => (player.secondaryRol == 'Sheriff' && player.state == 'Muerto') || (player.secondaryRol == 'Ayudante' && player.state == 'Muerto'));
     } catch (e){
       selectedPlayer = lastDeathByWolf;
     }
-  
-    print('Existe el 1er jugador ${selectedPlayer?.name} - ${selectedPlayer?.phoneFlechado}');    
+
     //aqui verificamos si efectivamente existe
     if(selectedPlayer?.phoneFlechado != null){
       try {
         selectedPlayer2 = widget.selectedPlayers.firstWhere(
           (player) => (player.phone == selectedPlayer?.phoneFlechado));
-        print('Existe el 2do jugador ${selectedPlayer2.name} - ${selectedPlayer2.phoneFlechado}');
       } catch (e){
         selectedPlayer2 = null;
       }
     }
+
     if (selectedPlayer?.secondaryRol == 'Sheriff'){
       setState((){
         potionSheriff = false;
@@ -281,7 +280,7 @@ class _GameScreenState extends State<GameScreen> {
             selectedPlayer = null;
           }
           // print('Longitud de Protector $sizeProtector');
-          _turnProtector(sizeProtector);
+          _turnProtector(sizeProtector, 0);
           //}
         }
       }
@@ -850,9 +849,9 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   //Modal Protector
-  void _turnProtector(int numSize) {
+  void _turnProtector(int numSize, int indice) {
     Player? selectedPlayer; // Jugador seleccionado actualmente
-
+    List<Player> protectores = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Protector')).toList();
     showDialog(
       context: context,
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
@@ -861,7 +860,7 @@ class _GameScreenState extends State<GameScreen> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Protector"),
+              Text("Protector ${protectores[indice].name}"),
               IconButton(
                 icon: Icon(Icons.search, color: Colors.blue),
                 onPressed: () {
@@ -926,10 +925,9 @@ class _GameScreenState extends State<GameScreen> {
                     });
                   }
                 }
-                _generateRecord("Protector seleccionó a ${selectedPlayer?.role} - ${selectedPlayer?.name}");
-                // print(numSize);
+                _generateRecord("Protector ${protectores[indice].name} seleccionó a ${selectedPlayer?.role} - ${selectedPlayer?.name}");
                 if(numSize > 1){
-                  _turnProtector(numSize - 1);
+                  _turnProtector(numSize - 1, indice+1);
                 }
               },
               child: const Text("Aceptar"),
@@ -1502,6 +1500,7 @@ class _GameScreenState extends State<GameScreen> {
                   Expanded(child: Text(player.secondaryRol ?? '',style: TextStyle(fontSize: 20.0,))),
                   Expanded(child: Text(player.state ?? '',style: TextStyle(fontSize: 20.0,))),
                   Expanded(child: Text(player.phoneFlechado!= null? '💘': '',style: TextStyle(fontSize: 20.0,))),
+                  Expanded(child: Text(player.protegidoActivo != null? '🛡️': '',style: TextStyle(fontSize: 20.0,))),
                   SizedBox(
                      width: 60.0,  // Aquí puedes establecer el ancho del IconButton
                      height: 35.0,  // Altura si lo necesitas
