@@ -33,6 +33,10 @@ class HomeScreenState extends State<HomeScreen>{
   Color? warningColor = Colors.orange[300];
   Color? errorColor = Colors.red[300];
   Color? successColor = Colors.green[500];
+
+  bool _isAssigningSeats = false;
+  int _nextSeatNumber = 1;
+  final Map<int, String> _tempAssignedSeats = {}; // user.id → seat number temporal
   
   //Navegar a nueva pantalla
   void _startGameScreen() async{
@@ -119,6 +123,7 @@ class HomeScreenState extends State<HomeScreen>{
                 }
               }
               await _loadPlayers();
+              _nextSeatNumber = 1;
 
               if (mounted) {
                 Navigator.of(context).pop(false);
@@ -406,10 +411,24 @@ class HomeScreenState extends State<HomeScreen>{
    // Método que maneja la selección de un jugador
   void _onSelectPlayer(User player) {
     setState(() {
-      if (_selectedUsers.contains(player)) {
-        _selectedUsers.remove(player); // Si ya está seleccionado, lo deseleccionamos
+      if (_isAssigningSeats) {
+        // Verifica si el jugador aún no tiene un asiento asignado temporalmente.
+        if (!_tempAssignedSeats.containsKey(player.id)) {
+           //Asigna un número de asiento temporal al jugador.
+          _tempAssignedSeats[player.id] = _nextSeatNumber.toString();
+          // Cambia visualmente el asiento del jugador para que se vea en la interfaz.
+          player.numberSeat = _nextSeatNumber.toString(); // visual
+          _nextSeatNumber++;
+        } else {
+          _tempAssignedSeats.remove(player.id);
+          player.numberSeat = ''; // quitar visualmente
+        }
       } else {
-        _selectedUsers.add(player); // Si no está seleccionado, lo seleccionamos
+        if (_selectedUsers.contains(player)) {
+          _selectedUsers.remove(player);
+        } else {
+          _selectedUsers.add(player);
+        }
       }
     });
   }
@@ -514,6 +533,58 @@ class HomeScreenState extends State<HomeScreen>{
   );
 }
 
+void _confirmAssignSeatsToDB() async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('¿Guardar asignaciones?'),
+      content: const Text('¿Deseas guardar los números de asiento asignados?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancelar'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Guardar'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm == true) {
+    final db = await _databaseHelper.getDatabase();
+    for (var entry in _tempAssignedSeats.entries) {
+      final userId = entry.key;
+      final seat = entry.value;
+      final user = _users.firstWhere((u) => u.id == userId);
+      user.numberSeat = seat;
+      await _databaseHelper.updateUser(db, user);
+    }
+
+    _tempAssignedSeats.clear();
+    _nextSeatNumber = 1;
+    _isAssigningSeats = false;
+
+    await _loadPlayers();
+    if (mounted) {
+      showCustomSnackBar(context, 'Asientos asignados correctamente', successColor!);
+    }
+  } else {
+    for (var entry in _tempAssignedSeats.entries) {
+      final userId = entry.key;
+      final user = _users.firstWhere((u) => u.id == userId);
+      user.numberSeat = ''; // O null, según como manejes los asientos vacíos
+    }
+
+    _tempAssignedSeats.clear();
+    _nextSeatNumber = 1;
+    _isAssigningSeats = false;
+
+    setState(() {}); // Redibuja la interfaz
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -580,6 +651,34 @@ class HomeScreenState extends State<HomeScreen>{
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                FilledButton(
+                  onPressed: (){
+                    setState((){
+                      _isAssigningSeats = !_isAssigningSeats;
+                      if (!_isAssigningSeats) { 
+                        for (var entry in _tempAssignedSeats.entries) {
+                          final userId = entry.key;
+                          final user = _users.firstWhere((u) => u.id == userId);
+                          user.numberSeat = ''; // O null, según como manejes los asientos vacíos
+                        }
+                        _tempAssignedSeats.clear();
+                        _nextSeatNumber = 1;
+                      }
+                    });
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _isAssigningSeats ?  Colors.blue: Colors.purple[100],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4.0), // Ajusta el redondeo aquí
+                    ),
+                  ),
+                  child: Text(_isAssigningSeats ? 'Cancelar asignación' : 'Asignar asientos'),
+                ),
+                if (_isAssigningSeats && _tempAssignedSeats.isNotEmpty)
+                  FilledButton(
+                    onPressed: _confirmAssignSeatsToDB,
+                    child: const Text('Confirmar asignación'),
+                ),
                 Text('Jugadores seleccionados ${_selectedUsers.length}', 
                   style: TextStyle(
                     fontSize: 18.0, // Cambia este valor al tamaño que desees
@@ -635,46 +734,6 @@ class HomeScreenState extends State<HomeScreen>{
         ),
       );
     }
-    // return Expanded(
-    //   child: ListView.builder(
-    //     itemCount: _filteredUsers.length, // Muestra los elementos filtrados
-    //     itemBuilder: (context, index) {
-    //       final player = _filteredUsers[index];
-    //       final isSelected = _selectedUsers.contains(player); // Verifica si el item está seleccionado
-    //       return Card(
-    //         child: ListTile(
-    //           leading: Icon (
-    //             isSelected ? Icons.check_circle : Icons.check_circle_outline, // Muestra el icono dependiendo de la selección
-    //             color: isSelected ? Colors.green : Colors.grey,// Cambia el color según el estado de selección,
-    //           ),
-    //           title: Text('${player.name} ${player.lastName}      Tel: ${player.phone}      Asiento: ${player.numberSeat}',
-    //           // title: Text('${player.name} ${player.lastName}      Tel: ${player.phone} ',
-    //             style: TextStyle(
-    //               fontSize: 20.0,
-    //             )),
-    //           // subtitle: Text('Asiento: ${player.numberSeat}',
-    //           //   style: new TextStyle(
-    //           //     fontSize: 20.0,
-    //           //   )),
-    //           trailing: Row(
-    //             mainAxisSize: MainAxisSize.min,
-    //             children: [
-    //               IconButton(
-    //                 icon: Icon(Icons.edit, color: Colors.blue),
-    //                 onPressed: () => _showDialogEditUser(player),
-    //               ),
-    //               IconButton(
-    //                 icon: Icon(Icons.delete, color: Colors.red),
-    //                 onPressed: () => _deleteUser(player),
-    //               ),
-    //             ],
-    //           ),
-    //           onTap: () => _onSelectPlayer(player), // Maneja la selección
-    //         ),
-    //       );
-    //     },
-    //   ),
-    // );
     return Expanded(
       child: GridView.count(
         crossAxisCount: 4,
@@ -712,12 +771,12 @@ class HomeScreenState extends State<HomeScreen>{
                           ),
                           Text(
                             'Tel: ${player.phone}',
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 18),
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Asiento: ${player.numberSeat}',
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 18),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
