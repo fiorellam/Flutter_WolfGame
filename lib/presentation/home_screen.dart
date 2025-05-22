@@ -55,10 +55,10 @@ class HomeScreenState extends State<HomeScreen>{
       _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
       return;
     } else if (_selectedUsers.length < 13  && _selectedValue == levelsList[2]){
-      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 13 jugadores para iniciar la partida en el nivel ${levelsList[2]}");
       return;
     } else if (_selectedUsers.length < 16  && _selectedValue == levelsList[3]){
-      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 10 jugadores para iniciar la partida en el nivel ${levelsList[1]}");
+      _showMessageDialog("Jugadores Insuficientes","Debes seleccionar al menos 16 jugadores para iniciar la partida en el nivel ${levelsList[3]}");
       return;
     }
     //Llamar funcion que convierte lista de User a Player

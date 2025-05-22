@@ -1387,16 +1387,17 @@ class _GameScreenState extends State<GameScreen> {
                     _turnCupido();
                     hasCupidoBeenSelected = true;
                   }*/
-                  FilledButton.icon(
-                    onPressed: _turnCupido,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: (isDay && !hasCupidoBeenSelected) ? const Color.fromARGB(255, 255, 71, 132) : Colors.grey,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
-                      padding: const EdgeInsets.all(10),
+                  if(widget.level != 'Principiante')
+                    FilledButton.icon(
+                      onPressed: _turnCupido,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: (isDay && !hasCupidoBeenSelected) ? const Color.fromARGB(255, 255, 71, 132) : Colors.grey,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
+                        padding: const EdgeInsets.all(10),
+                      ),
+                      icon: Icon(Icons.favorite),
+                      label: Text('Cupido', style: TextStyle(fontSize: fontSize)),
                     ),
-                    icon: Icon(Icons.favorite),
-                    label: Text('Cupido', style: TextStyle(fontSize: fontSize)),
-                  ),
                   FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
