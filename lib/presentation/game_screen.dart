@@ -1280,6 +1280,11 @@ class _GameScreenState extends State<GameScreen> {
       } 
       return false;
   }
+  bool existsRolSecondary(String rolSecondary){
+    return widget.selectedPlayers.any(
+      (player) => player.secondaryRol == rolSecondary && player.state == 'Vivo',
+    );
+  }
 
   Future <void> openWhatsApp({
     required String phone,
@@ -1401,7 +1406,7 @@ class _GameScreenState extends State<GameScreen> {
                   FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: (potions >= 1 && potionSheriff == true) ? Colors.amber : Colors.grey,
+                      backgroundColor: (potions >= 1 && potionSheriff == true && existsRolSecondary('Sheriff')) ? Colors.amber : Colors.grey,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
@@ -1411,7 +1416,7 @@ class _GameScreenState extends State<GameScreen> {
                   FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: (potions >= 2 && potionPueblo == true) ? Colors.blue : Colors.grey,
+                      backgroundColor: (potions >= 2 && potionPueblo == true && (existsRolSecondary('Sheriff') || existsRolSecondary('Ayudante'))) ? Colors.blue : Colors.grey,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
@@ -1422,7 +1427,7 @@ class _GameScreenState extends State<GameScreen> {
                   FilledButton.icon(
                     onPressed: _updatePotions,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: (potions > 2 && potionAyudante == true) ? Colors.deepOrangeAccent : Colors.grey,
+                      backgroundColor: (potions > 2 && potionAyudante == true && existsRolSecondary('Ayudante')) ? Colors.deepOrangeAccent : Colors.grey,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
                       padding: const EdgeInsets.all(10),
                     ),
