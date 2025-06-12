@@ -29,12 +29,15 @@
             {"name": "Cupido"},
             {"name": "Protector"},
             {"name": "Niña"},
-            {"name": "Cazador"}
+            {"name": "Cazador"},
+            {"name": "Alcalde"}
         ]
     },
     {
         "level": "Pro",
         "roles": [
+            {"name": "Cupido"},
+            {"name": "Protector"},
             {"name": "Curandero"},
             {"name": "Vidente"},
             {"name": "Bruja"},
@@ -42,10 +45,8 @@
             {"name": "Niña"},
             {"name": "Cazador"},
             {"name": "Alcalde"},
-            {"name": "Lobo solitario"},
-            {"name": "Leproso"},
-            {"name": "Cupido"},
-            {"name": "Protector"}
+            {"name": "Ladron"},
+            {"name": "Esbirro"}
         ]
     }
 ]
