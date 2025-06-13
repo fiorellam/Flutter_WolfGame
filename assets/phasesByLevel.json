@@ -45,20 +45,16 @@
     {
         "level": "Avanzado",
         "dia": [
-            {"name": "Cupido"},
             {"name": "Asamblea"},
-            {"name": "Eleccion Sheriff"},
             {"name": "Nominacion"}
         ],
         "noche":[
             {"name": "Protector"},
-            {"name": "Niña"},
             {"name": "Lobo"},
             {"name": "Curandero"},
             {"name": "Alcalde"},
             {"name": "Vidente"},
-            {"name": "Bruja"},
-            {"name": "Cazador"}
+            {"name": "Bruja"}
         ],
         "jerarquia": [
             {"name": "Cupido"},
@@ -76,23 +72,18 @@
     {
         "level": "Pro",
         "dia": [
-            {"name": "Cupido"},
             {"name": "Asamblea"},
-            {"name": "Eleccion Sheriff"},
             {"name": "Nominacion"}
         ],
         "noche":[
             {"name": "Protector"},
-            {"name": "Niña"},
             {"name": "Lobo"},
             {"name": "Curandero"},
             {"name": "Alcalde"},
             {"name": "Vidente"},
             {"name": "Bruja"},
             {"name": "Ladron"},
-            {"name": "Cazador"},
             {"name": "Esbirro"},
-            {"name": "Niña"},
             {"name": "Lobo solitario"},
             {"name": "Leproso"}
         ],

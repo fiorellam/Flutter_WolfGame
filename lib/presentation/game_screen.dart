@@ -63,8 +63,9 @@ class _GameScreenState extends State<GameScreen> {
       gameState = isDay ? dayPhases[0].name : nightPhases[0].name; // Inicializar el juego
       nextStatePhase = dayPhases[1].name;
     });
-
-    // Turno para Cupido
+    
+    _turnInfo(levelPhases);
+    //Turno para Cupido
     /*if (isDay && levelPhases.level != 'Principiante' && !hasCupidoBeenSelected) {
       _turnCupido();
       hasCupidoBeenSelected = true;
@@ -1222,6 +1223,240 @@ class _GameScreenState extends State<GameScreen> {
                 }
               },
               child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+    //Modal informativo
+  Future<bool> _turnInfo(levelPhases) async{
+    return await showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: const Text("Información importante"),
+        content: Text('Escoger Sheriff y Ayudante'
+          '${levelPhases.level != 'Principiante' ? ', además hay Cupido' : ''}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Salir
+            child: Text("Aceptar"),
+          ),
+        ],
+      )
+    );    
+  }
+
+  //Modal Cazador
+  void _turnCazador() {
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? selectedPlayer2; // Jugador que esta relacionado con el anterior
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Cazador"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.state?.toLowerCase() != 'muerto').toList(); // Excluir jugadores Muertos
+
+                filteredAndSortedPlayers.sort(
+                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
+              
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown para seleccionar jugador
+                  DropdownButton<Player>(
+                    hint: const Text("Seleccione un jugador"),
+                    value: selectedPlayer,
+                    items: filteredAndSortedPlayers
+                      .map<DropdownMenuItem<Player>>((player) {
+                      return DropdownMenuItem<Player>(
+                        value: player,
+                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                      );
+                    }).toList(),
+                    onChanged: (Player? newValue) {
+                      setState(() {
+                        selectedPlayer = newValue;
+                      });
+                    },
+                  ),
+                  Text(selectedPlayer != null ? 
+                        (selectedPlayer?.role == 'Lobo' ? 
+                            'El jugador que elegiste es: ${selectedPlayer?.role}' 
+                            :'No puedes saber el rol de este jugador')
+                        : 'Aun no seleccionas ningun jugador')
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
+            TextButton(
+              onPressed: () {
+                if (selectedPlayer?.phoneFlechado != null){
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere(
+                  (player) => selectedPlayer?.phone == player.phoneFlechado);
+                }
+                //optimizar este bloque
+                //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
+                if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
+                  setState((){
+                    _generateRecord('Bruja descubrió pero no lo pudo matar porque esta protegido: ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                    Navigator.of(context).pop();
+                  });
+                } else{
+                  if (selectedPlayer?.phoneFlechado != null && selectedPlayer?.role == 'Lobo'){
+                    setState(() {
+                      selectedPlayer?.state = 'Muerto';
+                      selectedPlayer2?.state = 'Muerto';
+                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mató a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
+                      Navigator.of(context).pop();
+                    });
+                  } else {
+                    if (selectedPlayer?.role == 'Lobo'){
+                      setState(() {
+                        selectedPlayer?.state = 'Muerto';
+                        _generateRecord('Bruja descubrió y mató a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                        Navigator.of(context).pop();
+                      });
+                    }
+                    else {
+                      setState((){
+                        _generateRecord('Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo');
+                        Navigator.of(context).pop();
+                      });
+                    }
+                  }
+                }
+              },
+              child: const Text("Aceptar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  //Modal Cazador
+  void _turnAlcalde() {
+    Player? selectedPlayer; // Jugador seleccionado actualmente
+    Player? selectedPlayer2; // Jugador que esta relacionado con el anterior
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Alcalde"),
+              IconButton(
+                icon: Icon(Icons.search, color: Colors.blue),
+                onPressed: () {
+                  _showPlayers();// Cierra el diálogo
+                },
+              ),
+            ]
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                .where((player) => player.state?.toLowerCase() != 'muerto').toList(); // Excluir jugadores Muertos
+
+                filteredAndSortedPlayers.sort(
+                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
+              
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Dropdown para seleccionar jugador
+                  DropdownButton<Player>(
+                    hint: const Text("Seleccione un jugador"),
+                    value: selectedPlayer,
+                    items: filteredAndSortedPlayers
+                      .map<DropdownMenuItem<Player>>((player) {
+                      return DropdownMenuItem<Player>(
+                        value: player,
+                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                      );
+                    }).toList(),
+                    onChanged: (Player? newValue) {
+                      setState(() {
+                        selectedPlayer = newValue;
+                      });
+                    },
+                  ),
+                  Text(selectedPlayer != null ? 
+                        (selectedPlayer?.role == 'Lobo' ? 
+                            'El jugador que elegiste es: ${selectedPlayer?.role}' 
+                            :'No puedes saber el rol de este jugador')
+                        : 'Aun no seleccionas ningun jugador')
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {Navigator.of(context).pop();},
+              child: const Text("Bajar impuestos")),
+            TextButton(
+              onPressed: () {
+                if (selectedPlayer?.phoneFlechado != null){
+                  selectedPlayer2 = widget.selectedPlayers.firstWhere(
+                  (player) => selectedPlayer?.phone == player.phoneFlechado);
+                }
+                //optimizar este bloque
+                //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
+                if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
+                  setState((){
+                    _generateRecord('Bruja descubrió pero no lo pudo matar porque esta protegido: ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                    Navigator.of(context).pop();
+                  });
+                } else{
+                  if (selectedPlayer?.phoneFlechado != null && selectedPlayer?.role == 'Lobo'){
+                    setState(() {
+                      selectedPlayer?.state = 'Muerto';
+                      selectedPlayer2?.state = 'Muerto';
+                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mató a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
+                      Navigator.of(context).pop();
+                    });
+                  } else {
+                    if (selectedPlayer?.role == 'Lobo'){
+                      setState(() {
+                        selectedPlayer?.state = 'Muerto';
+                        _generateRecord('Bruja descubrió y mató a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                        Navigator.of(context).pop();
+                      });
+                    }
+                    else {
+                      setState((){
+                        _generateRecord('Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo');
+                        Navigator.of(context).pop();
+                      });
+                    }
+                  }
+                }
+              },
+              child: const Text("Subir Impuestos"),
             ),
           ],
         );
