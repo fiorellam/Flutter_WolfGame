@@ -132,23 +132,12 @@ class _GameScreenState extends State<GameScreen> {
 
   void _updatePotionAlcalde(){
     Player? selectedPlayer;
-    Player? selectedPlayer2;
 
     try{
       selectedPlayer = widget.selectedPlayers.firstWhere(
         (player) => (player.secondaryRol == 'Alcalde' && player.state == 'Muerto'));
     } catch (e){
       selectedPlayer = lastDeathByWolf;
-    }
-
-    //aqui verificamos si efectivamente existe
-    if(selectedPlayer?.phoneFlechado != null){
-      try {
-        selectedPlayer2 = widget.selectedPlayers.firstWhere(
-          (player) => (player.phone == selectedPlayer?.phoneFlechado));
-      } catch (e){
-        selectedPlayer2 = null;
-      }
     }
 
     if (pocion == true){
@@ -163,10 +152,58 @@ class _GameScreenState extends State<GameScreen> {
           pocionOscura = false;
           selectedPlayer?.state = 'Vivo';
           _generateRecord('Alcalde uso la poción oscura ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} para salvarse');
+          _elegirRole();
         });
       }
     }
   }
+  
+  void _elegirRole() {
+    Player? selectedPlayer;  // Jugador que esta relacionado con el anterior
+
+    try{
+      selectedPlayer = widget.selectedPlayers.firstWhere(
+        (player) => (player.role == 'Alcalde'));
+    } catch (e){
+      selectedPlayer = null;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
+      builder: (context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Alcalde murió"),
+            ]
+          ),
+          content: Text('Puede escoger entre estos 2 roles'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState((){
+                  selectedPlayer?.role = 'Lobo Solitario';
+                  _generateRecord('Alcalde ${selectedPlayer?.numberSeat} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} escogió el nuevo Role -> Lobo Solitario');
+                  Navigator.of(context).pop();
+                });
+              },
+              child: const Text("Lobo Solitario")),
+            TextButton(
+              onPressed: () {
+                _generateRecord('Alcalde ${selectedPlayer?.numberSeat} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} escogió el nuevo Role -> Leproso');
+                selectedPlayer?.role = 'Leproso';
+                Navigator.of(context).pop();
+              },
+              child: const Text("Leproso"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _updateGameState(List<Phase> currentPhases) {
      // Actualizar el estado del juego (fase actual)
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
@@ -280,6 +317,9 @@ class _GameScreenState extends State<GameScreen> {
                 if (selectedPlayer?.role == 'Cazador'){
                   _turnCazador();
                 }
+                if (pocionOscura == true && selectedPlayer?.role == 'Alcalde'){
+                  _updatePotionAlcalde();
+                }
               });
             } else {
               setState(() {
@@ -289,6 +329,9 @@ class _GameScreenState extends State<GameScreen> {
                 _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado');
                 if (selectedPlayer?.role == 'Cazador' || selectedPlayer2?.role == 'Cazador'){
                   _turnCazador();
+                }
+                if (pocionOscura == true && (selectedPlayer?.role == 'Alcalde' || selectedPlayer2?.role == 'Alcalde')){
+                  _updatePotionAlcalde();
                 }
               });
             }
@@ -1459,26 +1502,30 @@ class _GameScreenState extends State<GameScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} bajó los impuestos');
-                Navigator.of(context).pop();
-                bajarImpuesto = bajarImpuesto + 1;
-                afectaBrujaVidente = false;
-                if (bajarImpuesto == 1 && pocionOscura == false){
-                  pocion = true;
-                  _generateRecord('Alcalde obtuvo poción');
-                }
+                setState((){
+                  _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} bajó los impuestos');
+                  bajarImpuesto = bajarImpuesto + 1;
+                  afectaBrujaVidente = false;
+                  if (bajarImpuesto == 1 && pocionOscura == false){
+                    pocion = true;
+                    _generateRecord('Alcalde obtuvo poción');
+                  }
+                  Navigator.of(context).pop();
+                });
               },
               child: const Text("Bajar impuestos")),
             TextButton(
               onPressed: () {
-                _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} subió los impuestos');
-                Navigator.of(context).pop();
-                afectaBrujaVidente = true;
-                subirImpuesto = subirImpuesto + 1;
-                if (subirImpuesto == 1 && pocion == false){
-                  pocionOscura = true;
-                  _generateRecord('Alcalde obtuvo poción oscura');
-                }
+                setState((){
+                  _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} subió los impuestos');
+                  afectaBrujaVidente = true;
+                  subirImpuesto = subirImpuesto + 1;
+                  if (subirImpuesto == 1 && pocion == false){
+                    pocionOscura = true;
+                    _generateRecord('Alcalde obtuvo poción oscura');
+                  }
+                  Navigator.of(context).pop();
+                });
               },
               child: const Text("Subir Impuestos"),
             ),
