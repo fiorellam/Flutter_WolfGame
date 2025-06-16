@@ -38,6 +38,9 @@ class _GameScreenState extends State<GameScreen> {
   int dayCounter = 1;
   int nightCounter = 0;
   int curanderoTimesBeenSaved = 0;
+  int subirImpuesto = -1;
+  int bajarImpuesto = -1;
+  bool afectaBrujaVidente = false;
   //declarar una sola vez
   final sizeProtector = 0;
   final sizeCazador = 0;
@@ -303,18 +306,38 @@ class _GameScreenState extends State<GameScreen> {
           _turnCurandero();
         }
       }
+      
+      if (!isDay && nightPhases[currentPhaseIndex].name == 'Alcalde') {
+        List<Player> curanderos = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Alcalde'));
+        if(curanderos.isNotEmpty && curanderos[0].state != 'Muerto'){
+            // Aquí colocas el código para realizar la acción de curar, si es necesario
+          _turnAlcalde();
+        }
+      }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Vidente') {
         List<Player> videntes = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Vidente'));
         if(videntes.isNotEmpty && videntes[0].state != 'Muerto'){
-          _turnVidente();
+          if(afectaBrujaVidente == true && (subirImpuesto % 2 == 0)){
+            setState((){
+              _generateRecord('Vidente no puede usar su habilidad por el alza de impuesto');
+            });
+          } else {
+            _turnVidente();
+          }
         }
       }
 
       if (!isDay && nightPhases[currentPhaseIndex].name == 'Bruja') {
         List<Player> bruja = List<Player>.from(widget.selectedPlayers.where((player) => player.role == 'Bruja'));
         if(bruja.isNotEmpty && bruja[0].state != 'Muerto'){
-          _turnBruja();
+          if(afectaBrujaVidente == true && (subirImpuesto % 2 == 1)){
+            setState((){
+              _generateRecord('Bruja no puede usar su habilidad por el alza de impuesto');
+            });
+          } else {
+            _turnBruja();
+          }
         }
       }
     });
@@ -1367,8 +1390,14 @@ class _GameScreenState extends State<GameScreen> {
 
   //Modal Alcalde
   void _turnAlcalde() {
-    Player? selectedPlayer; // Jugador seleccionado actualmente
-    Player? selectedPlayer2; // Jugador que esta relacionado con el anterior
+    Player? selectedPlayer;  // Jugador que esta relacionado con el anterior
+
+    try{
+      selectedPlayer = widget.selectedPlayers.firstWhere(
+        (player) => (player.role == 'Alcalde'));
+    } catch (e){
+      selectedPlayer = null;
+    }
 
     showDialog(
       context: context,
@@ -1379,92 +1408,24 @@ class _GameScreenState extends State<GameScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Alcalde"),
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.blue),
-                onPressed: () {
-                  _showPlayers();// Cierra el diálogo
-                },
-              ),
             ]
           ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              List<Player> filteredAndSortedPlayers = widget.selectedPlayers
-                .where((player) => player.state?.toLowerCase() != 'muerto').toList(); // Excluir jugadores Muertos
-
-                filteredAndSortedPlayers.sort(
-                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
-              
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Dropdown para seleccionar jugador
-                  DropdownButton<Player>(
-                    hint: const Text("Seleccione un jugador"),
-                    value: selectedPlayer,
-                    items: filteredAndSortedPlayers
-                      .map<DropdownMenuItem<Player>>((player) {
-                      return DropdownMenuItem<Player>(
-                        value: player,
-                        child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                      );
-                    }).toList(),
-                    onChanged: (Player? newValue) {
-                      setState(() {
-                        selectedPlayer = newValue;
-                      });
-                    },
-                  ),
-                  Text(selectedPlayer != null ? 
-                        (selectedPlayer?.role == 'Lobo' ? 
-                            'El jugador que elegiste es: ${selectedPlayer?.role}' 
-                            :'No puedes saber el rol de este jugador')
-                        : 'Aun no seleccionas ningun jugador')
-                ],
-              );
-            },
-          ),
+          content: Text('Subir o bajar impuestos?'),
           actions: [
             TextButton(
-              onPressed: () {Navigator.of(context).pop();},
+              onPressed: () {
+                _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} bajó los impuestos');
+                Navigator.of(context).pop();
+                bajarImpuesto = bajarImpuesto + 1;
+                afectaBrujaVidente = false;
+              },
               child: const Text("Bajar impuestos")),
             TextButton(
               onPressed: () {
-                if (selectedPlayer?.phoneFlechado != null){
-                  selectedPlayer2 = widget.selectedPlayers.firstWhere(
-                  (player) => selectedPlayer?.phone == player.phoneFlechado);
-                }
-                //optimizar este bloque
-                //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
-                if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
-                  setState((){
-                    _generateRecord('Bruja descubrió pero no lo pudo matar porque esta protegido: ${selectedPlayer?.role} - ${selectedPlayer?.name}');
-                    Navigator.of(context).pop();
-                  });
-                } else{
-                  if (selectedPlayer?.phoneFlechado != null && selectedPlayer?.role == 'Lobo'){
-                    setState(() {
-                      selectedPlayer?.state = 'Muerto';
-                      selectedPlayer2?.state = 'Muerto';
-                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mató a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
-                      Navigator.of(context).pop();
-                    });
-                  } else {
-                    if (selectedPlayer?.role == 'Lobo'){
-                      setState(() {
-                        selectedPlayer?.state = 'Muerto';
-                        _generateRecord('Bruja descubrió y mató a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
-                        Navigator.of(context).pop();
-                      });
-                    }
-                    else {
-                      setState((){
-                        _generateRecord('Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo');
-                        Navigator.of(context).pop();
-                      });
-                    }
-                  }
-                }
+                _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} subió los impuestos');
+                Navigator.of(context).pop();
+                afectaBrujaVidente = true;
+                subirImpuesto = subirImpuesto + 1;
               },
               child: const Text("Subir Impuestos"),
             ),
