@@ -235,6 +235,9 @@ class _GameScreenState extends State<GameScreen> {
                 selectedPlayer?.state = 'Muerto';
                 lastDeathByWolf = selectedPlayer;
                 _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                if (selectedPlayer?.role == 'Cazador'){
+                  _turnCazador();
+                }
               });
             } else {
               setState(() {
@@ -242,6 +245,9 @@ class _GameScreenState extends State<GameScreen> {
                 selectedPlayer2?.state = 'Muerto';
                 lastDeathByWolf = selectedPlayer;
                 _generateRecord('Mataron a ${selectedPlayer?.role} - ${selectedPlayer?.name} que a su vez mataron a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} por estar enamorado');
+                if (selectedPlayer?.role == 'Cazador' || selectedPlayer2?.role == 'Cazador'){
+                  _turnCazador();
+                }
               });
             }
           } else {
@@ -571,6 +577,9 @@ class _GameScreenState extends State<GameScreen> {
                       selectedPlayer2?.state = 'Muerto';
                       lastDeathByWolf = selectedPlayer;
                       Navigator.of(context).pop();
+                      if (selectedPlayer?.role == 'Cazador' || selectedPlayer2?.role == 'Cazador'){
+                        _turnCazador();
+                      }
                     });
                   }
                 } else {
@@ -585,6 +594,9 @@ class _GameScreenState extends State<GameScreen> {
                       selectedPlayer?.state = 'Muerto';
                       lastDeathByWolf = selectedPlayer;
                       Navigator.of(context).pop();
+                      if (selectedPlayer?.role == 'Cazador'){
+                        _turnCazador();
+                      }
                     });
                   }
                 }
@@ -622,6 +634,9 @@ class _GameScreenState extends State<GameScreen> {
             playerSelectedToKill.state = "Muerto"; // Cambiar el estado a "muerto"
             selectedPlayer2?.state = "Muerto"; // Cambiar el estado a "muerto"
             _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name} y ${selectedPlayer2?.role} - ${selectedPlayer2?.name} el cual estaba flechado');
+            if (playerSelectedToKill.role == 'Cazador' || selectedPlayer2?.role == 'Cazador'){
+              _turnCazador();
+            }
           });
         }
       } else{
@@ -633,6 +648,9 @@ class _GameScreenState extends State<GameScreen> {
           setState(() {
             playerSelectedToKill.state = "Muerto"; // Cambiar el estado a "muerto"
             _generateRecord('El destino eligió para matar a: ${playerSelectedToKill.role} - ${playerSelectedToKill.name}');
+            if (playerSelectedToKill.role == 'Cazador'){
+              _turnCazador();
+            }
           });
         }
       }
@@ -1298,17 +1316,17 @@ class _GameScreenState extends State<GameScreen> {
                       });
                     },
                   ),
-                  Text(selectedPlayer != null ? 
-                        (selectedPlayer?.role == 'Lobo' ? 
-                            'El jugador que elegiste es: ${selectedPlayer?.role}' 
-                            :'No puedes saber el rol de este jugador')
-                        : 'Aun no seleccionas ningun jugador')
                 ],
               );
             },
           ),
           actions: [
-            TextButton(onPressed: () {Navigator.of(context).pop();},child: const Text("Cancelar")),
+            TextButton(onPressed: () {
+              setState((){
+                _generateRecord('Cazador prefirio no llevarse a nadie');
+                Navigator.of(context).pop();
+              });},
+              child: const Text("Cancelar")),
             TextButton(
               onPressed: () {
                 if (selectedPlayer?.phoneFlechado != null){
@@ -1317,33 +1335,25 @@ class _GameScreenState extends State<GameScreen> {
                 }
                 //optimizar este bloque
                 //revisamos si esta protegido por lo cual si esta protegido y es lobo no puede matarlo
-                if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true) && selectedPlayer?.role == 'Lobo'){
+                if((selectedPlayer?.protegidoActivo == true || selectedPlayer2?.protegidoActivo == true)){
                   setState((){
-                    _generateRecord('Bruja descubrió pero no lo pudo matar porque esta protegido: ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                    _generateRecord('Cazador no pudo llevarse a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque esta protegido');
                     Navigator.of(context).pop();
                   });
                 } else{
-                  if (selectedPlayer?.phoneFlechado != null && selectedPlayer?.role == 'Lobo'){
+                  if (selectedPlayer?.phoneFlechado != null){
                     setState(() {
                       selectedPlayer?.state = 'Muerto';
                       selectedPlayer2?.state = 'Muerto';
-                      _generateRecord('Bruja descubrió a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mató a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
+                      _generateRecord('Cazador se llevo a ${selectedPlayer?.role} - ${selectedPlayer?.name} y además mató a ${selectedPlayer2?.role} - ${selectedPlayer2?.name} porque estaba enamorado');
                       Navigator.of(context).pop();
                     });
                   } else {
-                    if (selectedPlayer?.role == 'Lobo'){
-                      setState(() {
-                        selectedPlayer?.state = 'Muerto';
-                        _generateRecord('Bruja descubrió y mató a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
-                        Navigator.of(context).pop();
-                      });
-                    }
-                    else {
-                      setState((){
-                        _generateRecord('Bruja no pudo matar a ${selectedPlayer?.role} - ${selectedPlayer?.name} porque no es lobo');
-                        Navigator.of(context).pop();
-                      });
-                    }
+                    setState((){
+                      selectedPlayer?.state = 'Muerto';
+                      _generateRecord('Cazador se llevo a ${selectedPlayer?.role} - ${selectedPlayer?.name}');
+                      Navigator.of(context).pop();
+                    });
                   }
                 }
               },
@@ -1355,7 +1365,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  //Modal Cazador
+  //Modal Alcalde
   void _turnAlcalde() {
     Player? selectedPlayer; // Jugador seleccionado actualmente
     Player? selectedPlayer2; // Jugador que esta relacionado con el anterior
