@@ -41,6 +41,8 @@ class _GameScreenState extends State<GameScreen> {
   int subirImpuesto = -1;
   int bajarImpuesto = -1;
   bool afectaBrujaVidente = false;
+  bool pocionOscura = false;
+  bool pocion = false;
   //declarar una sola vez
   final sizeProtector = 0;
   final sizeCazador = 0;
@@ -128,6 +130,43 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void _updatePotionAlcalde(){
+    Player? selectedPlayer;
+    Player? selectedPlayer2;
+
+    try{
+      selectedPlayer = widget.selectedPlayers.firstWhere(
+        (player) => (player.secondaryRol == 'Alcalde' && player.state == 'Muerto'));
+    } catch (e){
+      selectedPlayer = lastDeathByWolf;
+    }
+
+    //aqui verificamos si efectivamente existe
+    if(selectedPlayer?.phoneFlechado != null){
+      try {
+        selectedPlayer2 = widget.selectedPlayers.firstWhere(
+          (player) => (player.phone == selectedPlayer?.phoneFlechado));
+      } catch (e){
+        selectedPlayer2 = null;
+      }
+    }
+
+    if (pocion == true){
+      setState((){
+        pocion = false;
+        selectedPlayer?.state = 'Vivo';
+        _generateRecord('${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} uso la poción para salvarse');
+      });
+    } else {
+      if (pocionOscura == true){
+        setState((){
+          pocionOscura = false;
+          selectedPlayer?.state = 'Vivo';
+          _generateRecord('Alcalde uso la poción oscura ${selectedPlayer?.role} - ${selectedPlayer?.name} ${selectedPlayer?.lastName} para salvarse');
+        });
+      }
+    }
+  }
   void _updateGameState(List<Phase> currentPhases) {
      // Actualizar el estado del juego (fase actual)
       gameState = isDay ? dayPhases[currentPhaseIndex].name : nightPhases[currentPhaseIndex].name;
@@ -603,6 +642,9 @@ class _GameScreenState extends State<GameScreen> {
                       if (selectedPlayer?.role == 'Cazador' || selectedPlayer2?.role == 'Cazador'){
                         _turnCazador();
                       }
+                      if (pocion == true && (selectedPlayer?.role == 'Alcalde' || selectedPlayer2?.role == 'Alcalde')){
+                        _updatePotionAlcalde();
+                      }
                     });
                   }
                 } else {
@@ -619,6 +661,9 @@ class _GameScreenState extends State<GameScreen> {
                       Navigator.of(context).pop();
                       if (selectedPlayer?.role == 'Cazador'){
                         _turnCazador();
+                      }
+                      if (pocion == true && selectedPlayer?.role == 'Alcalde'){
+                        _updatePotionAlcalde();
                       }
                     });
                   }
@@ -1418,6 +1463,10 @@ class _GameScreenState extends State<GameScreen> {
                 Navigator.of(context).pop();
                 bajarImpuesto = bajarImpuesto + 1;
                 afectaBrujaVidente = false;
+                if (bajarImpuesto == 1 && pocionOscura == false){
+                  pocion = true;
+                  _generateRecord('Alcalde obtuvo poción');
+                }
               },
               child: const Text("Bajar impuestos")),
             TextButton(
@@ -1426,6 +1475,10 @@ class _GameScreenState extends State<GameScreen> {
                 Navigator.of(context).pop();
                 afectaBrujaVidente = true;
                 subirImpuesto = subirImpuesto + 1;
+                if (subirImpuesto == 1 && pocion == false){
+                  pocionOscura = true;
+                  _generateRecord('Alcalde obtuvo poción oscura');
+                }
               },
               child: const Text("Subir Impuestos"),
             ),
