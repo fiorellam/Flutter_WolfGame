@@ -451,6 +451,7 @@ class HomeScreenState extends State<HomeScreen>{
     final TextEditingController loboController = TextEditingController();
     final TextEditingController protectorController = TextEditingController();
     final TextEditingController cazadorController = TextEditingController();
+    bool _checked = false;
 
     showDialog(
       context: context,
@@ -472,6 +473,20 @@ class HomeScreenState extends State<HomeScreen>{
               TextField(
                 controller: cazadorController,
                 decoration: InputDecoration(labelText: 'Cazadores $_numCazadores')
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _checked,
+                    onChanged: (val) {
+                      setState(() {
+                        _checked = val ?? false;
+                      });
+                    },
+                  ),
+                  const Expanded(child: Text('Lobos Ancestrales')),
+                ],
               ),
             ],
           ),
