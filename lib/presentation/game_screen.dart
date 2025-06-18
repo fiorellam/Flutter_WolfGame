@@ -688,6 +688,9 @@ class _GameScreenState extends State<GameScreen> {
                       if (pocion == true && (selectedPlayer?.role == 'Alcalde' || selectedPlayer2?.role == 'Alcalde')){
                         _updatePotionAlcalde();
                       }
+                      if (selectedPlayer?.role == 'Leproso'){
+                        _whoWonDialog(text: "Ganó el Leproso!!");
+                      }
                     });
                   }
                 } else {
@@ -707,6 +710,9 @@ class _GameScreenState extends State<GameScreen> {
                       }
                       if (pocion == true && selectedPlayer?.role == 'Alcalde'){
                         _updatePotionAlcalde();
+                      }
+                      if (selectedPlayer?.role == 'Leproso'){
+                        _whoWonDialog(text: "Ganó el Leproso!!");
                       }
                     });
                   }
