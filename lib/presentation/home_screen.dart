@@ -19,6 +19,7 @@ class HomeScreenState extends State<HomeScreen>{
   int _numLobos = 0;
   int _numProtectores = 0;
   int _numCazadores = 0;
+  bool _loboAncestrales = false;
   //Constante
   static const List<String> levelsList = ["Principiante", "Intermedio", "Avanzado", "Pro" ];
   String _selectedValue = ''; //Valor inicial
@@ -64,7 +65,7 @@ class HomeScreenState extends State<HomeScreen>{
     //Llamar funcion que convierte lista de User a Player
     List<Player> gamePlayers = convertUsersToPlayers(_selectedUsers.toList());
     //Asignar roles a los jugadores
-    await assignRolesToPlayers(gamePlayers, _selectedValue, _numLobos, _numProtectores, _numCazadores);
+    await assignRolesToPlayers(gamePlayers, _selectedValue, _numLobos, _numProtectores, _numCazadores, _loboAncestrales);
 
     // Verificar si el widget aún está montado antes de usar context
     // Después de un await, como en:
@@ -451,64 +452,68 @@ class HomeScreenState extends State<HomeScreen>{
     final TextEditingController loboController = TextEditingController();
     final TextEditingController protectorController = TextEditingController();
     final TextEditingController cazadorController = TextEditingController();
-    bool _checked = false;
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Administrador de Partida'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: loboController,
-                decoration: InputDecoration(labelText: 'Lobos $_numLobos')
-              ),
-              TextField(
-                controller: protectorController,
-                decoration: InputDecoration(labelText: 'Protectores $_numProtectores')
-              ),
-              TextField(
-                controller: cazadorController,
-                decoration: InputDecoration(labelText: 'Cazadores $_numCazadores')
-              ),
-              const SizedBox(height: 16),
-              Row(
+        return StatefulBuilder(
+          builder: (context, dialogSetState) {
+            return AlertDialog(
+              title: const Text('Administrador de Partida'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Checkbox(
-                    value: _checked,
-                    onChanged: (val) {
-                      setState(() {
-                        _checked = val ?? false;
-                      });
-                    },
+                  TextField(
+                    controller: loboController,
+                    decoration: InputDecoration(labelText: 'Lobos $_numLobos')
                   ),
-                  const Expanded(child: Text('Lobos Ancestrales')),
+                  TextField(
+                    controller: protectorController,
+                    decoration: InputDecoration(labelText: 'Protectores $_numProtectores')
+                  ),
+                  TextField(
+                    controller: cazadorController,
+                    decoration: InputDecoration(labelText: 'Cazadores $_numCazadores')
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _loboAncestrales,
+                        onChanged: (val) {
+                          dialogSetState(() {
+                            _loboAncestrales = val ?? false;
+                          });
+                        },
+                      ),
+                      const Expanded(child: Text('Lobos Ancestrales')),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); //cerrar el modal sin guardar
-              },
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _numLobos = int.tryParse(loboController.text) ?? 0;
-                  _numProtectores = int.tryParse(protectorController.text) ?? 0;
-                  _numCazadores = int.tryParse(cazadorController.text) ?? 0;
-                });
-                Navigator.of(context).pop(); //cerrar modal
-              },
-              child: const Text('Agregar'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); //cerrar el modal sin guardar
+                  },
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _numLobos = int.tryParse(loboController.text) ?? 0;
+                      _numProtectores = int.tryParse(protectorController.text) ?? 0;
+                      _numCazadores = int.tryParse(cazadorController.text) ?? 0;
+                      _loboAncestrales;
+                    });
+                    Navigator.of(context).pop(); //cerrar modal
+                  },
+                  child: const Text('Agregar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
