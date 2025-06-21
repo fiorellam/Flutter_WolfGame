@@ -11,8 +11,9 @@ import 'package:url_launcher/url_launcher.dart';
 class GameScreen extends StatefulWidget {
   final List<Player> selectedPlayers;
   final String level;
+  final bool lobosAncestrales;
 
-  const GameScreen({super.key, required this.selectedPlayers, required this.level});
+  const GameScreen({super.key, required this.selectedPlayers, required this.level, required this.lobosAncestrales});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -43,6 +44,7 @@ class _GameScreenState extends State<GameScreen> {
   bool afectaBrujaVidente = false;
   bool pocionOscura = false;
   bool pocion = false;
+  bool flagLobosAncestrales = false;
   //declarar una sola vez
   final sizeProtector = 0;
   final sizeCazador = 0;
@@ -61,7 +63,14 @@ class _GameScreenState extends State<GameScreen> {
     final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
     convertToWolf = (widget.selectedPlayers.length <= 8) ? 1 : (widget.selectedPlayers.length <= 15) ? 2 : 3;
     potions = (widget.selectedPlayers.length <= 9) ? 1 : (widget.selectedPlayers.length <= 20) ? 3 : 2;
-
+    try {
+      Player searchLobo = widget.selectedPlayers.firstWhere(
+        (player) => (player.loboOriginal == true));
+        flagLobosAncestrales = searchLobo.loboOriginal == true ? true : false;
+    } catch (e){
+      flagLobosAncestrales = false;
+    }
+    print("Flag de Lobos originales es -> ${flagLobosAncestrales}");
     setState(() {
       dayPhases = levelPhases.dia.cast<Phase>();
       nightPhases = levelPhases.noche.cast<Phase>();
@@ -309,7 +318,6 @@ class _GameScreenState extends State<GameScreen> {
           // Asignar el estado 'Muerto' si se encontró un jugador
           if (selectedPlayer != null) {
             if(selectedPlayer.phoneFlechado == null) {
-              //if (selectedPlayer.rol != 'Lobo')
               setState(() {
                 selectedPlayer?.state = 'Muerto';
                 lastDeathByWolf = selectedPlayer;
@@ -1664,7 +1672,12 @@ class _GameScreenState extends State<GameScreen> {
  @override
   Widget build(BuildContext context) {
     double fontSize = 17;
-    int numberWolfAlive = widget.selectedPlayers.where((player) => player.role == 'Lobo' && (player.state == 'Vivo' || player.state == 'Seleccionado')).length;
+    int numberWolfAlive;
+    if (flagLobosAncestrales == true){
+      numberWolfAlive= widget.selectedPlayers.where((player) => player.role == 'Lobo' && player.loboOriginal == true && (player.state == 'Vivo' ||  player.state == 'Seleccionado')).length;
+    } else {
+      numberWolfAlive= widget.selectedPlayers.where((player) => player.role == 'Lobo' && (player.state == 'Vivo' ||  player.  state == 'Seleccionado')).length;
+    }
     int numberFarmerAlive = widget.selectedPlayers.where((player) => player.role != 'Lobo' && (player.state == 'Vivo' || player.state == 'Seleccionado')).length;
     //List<PhasesByLevel> phases = loadPhases();
     //final levelPhases = phases.firstWhere((phase) => phase.level == widget.level);
@@ -1794,7 +1807,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  //Mostrar los datos
+  //Mostrar los datos trabajando en funcion
   Widget _buildPlayerListView() {
     return Expanded(
       child: ListView.builder(
@@ -1849,4 +1862,7 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
+  changeDeathOrWolf(Player selectedPlayer){
+    
+  } 
 }

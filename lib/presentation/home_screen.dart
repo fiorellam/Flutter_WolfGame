@@ -75,7 +75,7 @@ class HomeScreenState extends State<HomeScreen>{
 
     Navigator.push(
       context, 
-      MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers, level: _selectedValue, ))
+      MaterialPageRoute(builder: (context) => GameScreen(selectedPlayers: gamePlayers, level: _selectedValue, lobosAncestrales: _loboAncestrales))
     );
   }
 

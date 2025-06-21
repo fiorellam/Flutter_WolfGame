@@ -1,6 +1,22 @@
-Puntos a mejorear"
-Sheriff no debe poder ser asignado en las rondas si ya esta muerto
+Casos
+    Si no hay lobos ancestrales
+        debe seguir todo igual
+    
+    Si hay lobos ancestrales debemos tomar en cuenta esto
+        Si es lobo original
+            debe morir en caso de ser seleccionado
+        Si no es lobo original y no es lobo
+            debe convertirse a lobo
+        si no es lobo original y es lobo
+            debe morir
 
+        bruja podra matar a todos los lobos sin problema
+        curandero sigue curando igual
+        alcalde sigue haciendo su trabajo
 
-La bruja puede saber el rol de otro jugador aunque ese jugador no sea lobo?
-Bruja solo puede saber un rol si este es de lobo
+        las pociones serian otra cosa aqui ya que no mueren 
+            sino que se convierten
+        
+        pirinola y hoguera si mueren se convierten en lobo?
+        
+        cupido igual
