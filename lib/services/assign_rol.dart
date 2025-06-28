@@ -47,7 +47,7 @@ Future<List<RoleAssignment>> loadRolesFromJson() async{
 
 
 // Ejemplo de cómo usarlo
-Future<void> assignRolesToPlayers(List<Player> players, String level, int numLobos, int numProtectores, int numCazadores) async {
+Future<void> assignRolesToPlayers(List<Player> players, String level, int numLobos, int numProtectores, int numCazadores, bool lobosAncestrales) async {
   // Cargar los roles desde el archivo JSON
   List<RoleAssignment> rolesByLevel = await loadRolesFromJson();
 
@@ -106,7 +106,12 @@ Future<void> assignRolesToPlayers(List<Player> players, String level, int numLob
 
   // Asignar los roles a los jugadores
   for (int i = 0; i < players.length; i++) {
-    players[i].role = roles[i];
+    if(roles[i] == 'Lobo' && lobosAncestrales == true){
+      players[i].role = roles[i];
+      players[i].loboOriginal = true;
+    } else {
+      players[i].role = roles[i];
+    }
   }
   // Cargar fases para el nivel seleccionado
   List<PhasesByLevel> phases = await loadPhases();
@@ -130,6 +135,6 @@ Future<void> assignRolesToPlayers(List<Player> players, String level, int numLob
 
   // Mostrar los jugadores ordenados
   for (var player in players) {
-    print('Player: ${player.name}, Role: ${player.role}');
+    print('Player: ${player.name}, Role: ${player.role}, Original Lobo: ${player.loboOriginal}');
   }
 }
