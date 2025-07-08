@@ -22,6 +22,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   int convertToWolf = 0;
   int potions = 0;
+  bool _foundGirl = false;
   bool potionSheriff = true;
   bool potionAyudante = true;
   bool potionPueblo = true;
@@ -811,66 +812,92 @@ class _GameScreenState extends State<GameScreen> {
       context: context,
       barrierDismissible: false, // Impide cerrar tocando fuera del diálogo
       builder: (context) {
-        return AlertDialog(
-          title: Row (
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Lobos"),
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.blue),
-                onPressed: () {
-                  _showPlayers();// Cierra el diálogo
+        return StatefulBuilder(
+          builder: (context, dialogSetState){
+            return AlertDialog(
+              title: Row (
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Lobos"),
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.blue),
+                    onPressed: () {
+                      _showPlayers();// Cierra el diálogo
+                    },
+                  ),  
+                ],
+              ),
+              content: StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  // 1. Filtrar y ordenar jugadores antes del Dropdown
+                List<Player> filteredAndSortedPlayers = widget.selectedPlayers
+                    .where((player) =>
+                        player.state?.toLowerCase() != 'muerto' &&
+                        player.protegidoActivo != true)
+                    .toList();
+                filteredAndSortedPlayers.sort(
+                    (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Dropdown para seleccionar jugador
+                    DropdownButton<Player>(
+                      hint: const Text("Seleccione un jugador"),
+                      value: selectedPlayer,
+                      items: filteredAndSortedPlayers
+                        .map<DropdownMenuItem<Player>>((player) {
+                        return DropdownMenuItem<Player>(
+                          value: player,
+                          child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
+                        );
+                      }).toList(),
+                      onChanged: (Player? newValue) {
+                        setState(() {
+                          selectedPlayer = newValue;
+                        });
+                      },
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _foundGirl, //variable para encontrar a la niña
+                          onChanged: (val){
+                            dialogSetState(() {
+                              _foundGirl = val ?? false;
+                            });
+                          }
+                        ),
+                        Expanded (child: Text('Sabes quien es la niña?')),
+                      ]
+                    )
+                  ],
+                );
                 },
-              ),  
-            ],
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              // 1. Filtrar y ordenar jugadores antes del Dropdown
-            List<Player> filteredAndSortedPlayers = widget.selectedPlayers
-                .where((player) =>
-                    player.state?.toLowerCase() != 'muerto' &&
-                    player.protegidoActivo != true)
-                .toList();
-            filteredAndSortedPlayers.sort(
-                (player1, player2) => player1.numberSeat!.compareTo(player2.numberSeat!));
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Dropdown para seleccionar jugador
-                DropdownButton<Player>(
-                  hint: const Text("Seleccione un jugador"),
-                  value: selectedPlayer,
-                  items: filteredAndSortedPlayers
-                    .map<DropdownMenuItem<Player>>((player) {
-                    return DropdownMenuItem<Player>(
-                      value: player,
-                      child: Text("${player.numberSeat} - ${player.name} ${player.lastName}"),
-                    );
-                  }).toList(),
-                  onChanged: (Player? newValue) {
-                    setState(() {
-                      selectedPlayer = newValue;
+              ),
+              actions: [
+                TextButton(onPressed: () {Navigator.of(context).pop();}, child: const Text("Cancelar")),
+                TextButton(
+                  onPressed: () {
+                    setState((){
+                      if (_foundGirl == true){
+                        if (selectedPlayer?.role == 'Niña'){
+                          _generateRecord('Lobos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name} y como es la niña la ejecutaron inmediatamente');
+                          selectedPlayer?.state = 'Muerto';
+                        } else {
+                          _generateRecord('Lobos no pueden usar su habilidad al no haber encontrado a la niña');
+                        }
+                      } else {
+                        _generateRecord('Lobos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name }');
+                        selectedPlayer?.state = 'Seleccionado';
+                      }
+                      Navigator.of(context).pop();
                     });
                   },
+                  child: const Text("Aceptar"),
                 ),
               ],
             );
-            },
-          ),
-          actions: [
-            TextButton(onPressed: () {Navigator.of(context).pop();}, child: const Text("Cancelar")),
-            TextButton(
-              onPressed: () {
-                setState((){
-                  _generateRecord('Lobos seleccionaron a ${selectedPlayer?.role} - ${selectedPlayer?.name }');
-                  selectedPlayer?.state = 'Seleccionado';
-                  Navigator.of(context).pop();
-                });
-              },
-              child: const Text("Aceptar"),
-            ),
-          ],
+          },
         );
       },
     );
